@@ -180,7 +180,7 @@ const OnboardingScreen = ({ onContinue }) => (
       playsInline
       className="absolute inset-0 w-full h-full object-cover"
     >
-      <source src="/onboarding.mp4" type="video/mp4" />
+      <source src="https://res.cloudinary.com/dli7ryuqk/video/upload/v1765210277/onboarding_slgc5w.mp4" type="video/mp4" />
     </video>
 
     {/* Dark overlay */}
