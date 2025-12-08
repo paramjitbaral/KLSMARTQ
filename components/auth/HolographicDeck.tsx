@@ -12,21 +12,24 @@ const HolographicDeck = ({ onComplete }: { onComplete: () => void }) => {
         INIT 9 CARDS (cinematic layout, reduced lag)
   ---------------------------------------------------------- */
   useEffect(() => {
-    const count = 9;
-    const arr = Array.from({ length: count }).map((_, i) => ({
-      id: i,
-      initialPos: {
-        x: (Math.random() - 0.5) * window.innerWidth * 0.55,
-        y: (Math.random() - 0.5) * window.innerHeight * 0.55,
-        z: (Math.random() - 0.5) * 700,
-        rX: (Math.random() - 0.5) * 200,
-        rY: (Math.random() - 0.5) * 200,
-        rZ: (Math.random() - 0.5) * 200,
-      },
-    }));
+  const isMobile = window.innerWidth < 768; // mobile breakpoint
+  const count = isMobile ? 6 : 9; // 6 cards on mobile, 9 on desktop
 
-    setTickets(arr);
-  }, []);
+  const arr = Array.from({ length: count }).map((_, i) => ({
+    id: i,
+    initialPos: {
+      x: (Math.random() - 0.5) * window.innerWidth * 0.45,
+      y: (Math.random() - 0.5) * window.innerHeight * 0.45,
+      z: (Math.random() - 0.5) * 500,
+      rX: (Math.random() - 0.5) * 180,
+      rY: (Math.random() - 0.5) * 180,
+      rZ: (Math.random() - 0.5) * 180,
+    },
+  }));
+
+  setTickets(arr);
+}, []);
+
 
   /* ---------------------------------------------------------
         TEXT CONTENT

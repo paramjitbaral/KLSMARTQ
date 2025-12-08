@@ -71,6 +71,28 @@
         -ms-overflow-style: none;  /* IE and Edge */
         scrollbar-width: none;  /* Firefox */
       }
+
+      html, body {
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        height: 100%;
+        touch-action: none;
+      }
+
+      :root {
+        height: 100%;
+      }
+
+      body {
+        height: 100svh;
+        overflow: hidden;
+      }
+
+      #root, .w-full.h-screen {
+        height: 100%;
+        overflow: hidden;
+      }
     </style>
     <link rel="stylesheet" href="/index.css">
 </head>
