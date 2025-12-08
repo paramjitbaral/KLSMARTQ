@@ -67,182 +67,230 @@ const CurrentServiceCard: React.FC<{ token: Token; isLoading?: boolean }> = ({ t
                             {token.purpose}
                         </div>
                     </div>
-                    <div className="px-4 py-2 rounded-full bg-white/18 border border-white/25 text-[11px] font-bold uppercase tracking-wide backdrop-blur-sm shadow-inner whitespace-nowrap">In Progress</div>
+                    <div className="px-4 py-2 rounded-full bg-white/18 border border-white/25 text-[11px] font-bold uppercase tracking-wide backdrop-blur-sm shadow-inner whitespace-nowrap">
+                        In Progress
+                    </div>
                 </div>
 
                 <div className="flex flex-wrap gap-3 text-sm text-white/85">
-                    <span className="inline-flex items-center px-4 py-2 rounded-full bg-white/12 border border-white/20 font-semibold shadow-sm">Priority: {token.priority}</span>
+                    <span className="inline-flex items-center px-4 py-2 rounded-full bg-white/12 border border-white/20 font-semibold shadow-sm">
+                        Priority: {token.priority}
+                    </span>
                     {token.calledAt && (
-                        <span className="inline-flex items-center px-4 py-2 rounded-full bg-white/10 border border-white/18 shadow-sm">Started: {token.calledAt.toLocaleTimeString()}</span>
+                        <span className="inline-flex items-center px-4 py-2 rounded-full bg-white/10 border border-white/18 shadow-sm">
+                            Started: {token.calledAt.toLocaleTimeString()}
+                        </span>
                     )}
                 </div>
             </div>
         </div>
     );
-}
+};
+
+// ===================================================================================
+// STAFF DASHBOARD MAIN COMPONENT
+// ===================================================================================
 
 const StaffDashboard: React.FC = () => {
     const { currentUser, offices, tokens, callNextToken, completeToken } = useAppContext();
-    const staffOffices = useMemo(() =>
-        offices.filter(o => currentUser?.assignedOfficeIds?.includes(o.id) || currentUser?.role === 'Admin'),
+
+    const staffOffices = useMemo(
+        () =>
+            offices.filter(
+                (o) =>
+                    currentUser?.assignedOfficeIds?.includes(o.id) ||
+                    currentUser?.role === 'Admin'
+            ),
         [offices, currentUser]
     );
-    
-    const [selectedOfficeId, setSelectedOfficeId] = useState<string | null>(staffOffices[0]?.id || null);
+
+    const [selectedOfficeId, setSelectedOfficeId] = useState<string | null>(
+        staffOffices[0]?.id || null
+    );
     const [callError, setCallError] = useState('');
     const [calling, setCalling] = useState(false);
     const previousInProgressRef = React.useRef<string | null>(null);
 
-    // Effect to update selected office if staffOffices changes (e.g., on initial load)
+    // Auto-select first office on load
     React.useEffect(() => {
         if (!selectedOfficeId && staffOffices.length > 0) {
             setSelectedOfficeId(staffOffices[0].id);
         }
     }, [staffOffices, selectedOfficeId]);
 
-    const handleCallNext = async () => {
-        if (!selectedOfficeId || calling) return; // Prevent double-click
-        setCallError('');
-        setCalling(true);
-        
-        // Store current in-progress token ID before calling
-        const currentInProgress = tokens.find(t => t.officeId === selectedOfficeId && t.status === TokenStatus.IN_PROGRESS);
-        previousInProgressRef.current = currentInProgress?.id || null;
-        
-        try {
-            await callNextToken(selectedOfficeId);
-        } catch (err: any) {
-            setCallError(err.message || 'Failed to call next student');
-            setCalling(false);
-        }
-        // Don't set calling to false here - let the effect below handle it after state updates
-    };
-
-
-    const officeTokens = useMemo(() =>
-        tokens.filter(t => t.officeId === selectedOfficeId),
+    // Calculate office tokens
+    const officeTokens = useMemo(
+        () => tokens.filter((t) => t.officeId === selectedOfficeId),
         [tokens, selectedOfficeId]
     );
 
-    const waitingTokens = useMemo(() => 
-        officeTokens
-            .filter(t => t.status === TokenStatus.WAITING || t.status === TokenStatus.IN_PROGRESS)
-            .sort((a, b) => {
-                // Always show IN_PROGRESS first
-                if (a.status === TokenStatus.IN_PROGRESS && b.status !== TokenStatus.IN_PROGRESS) return -1;
-                if (b.status === TokenStatus.IN_PROGRESS && a.status !== TokenStatus.IN_PROGRESS) return 1;
-                if (a.priority === Priority.URGENT && b.priority !== Priority.URGENT) return -1;
-                if (b.priority === Priority.URGENT && a.priority !== Priority.URGENT) return 1;
-                if (a.priority === Priority.MEDICAL && b.priority !== Priority.MEDICAL) return -1;
-                if (b.priority === Priority.MEDICAL && a.priority !== Priority.MEDICAL) return 1;
-                return a.createdAt.getTime() - b.createdAt.getTime();
-            }),
+    // FIXED WAITING LIST — ONLY WAITING STUDENTS
+    const waitingTokens = useMemo(
+        () =>
+            officeTokens
+                .filter((t) => t.status === TokenStatus.WAITING)
+                .sort((a, b) => {
+                    if (a.priority === Priority.URGENT && b.priority !== Priority.URGENT) return -1;
+                    if (b.priority === Priority.URGENT && a.priority !== Priority.URGENT) return 1;
+
+                    if (a.priority === Priority.MEDICAL && b.priority !== Priority.MEDICAL) return -1;
+                    if (b.priority === Priority.MEDICAL && a.priority !== Priority.MEDICAL) return 1;
+
+                    return a.createdAt.getTime() - b.createdAt.getTime();
+                }),
         [officeTokens]
     );
-    
-    const inProgressToken = useMemo(() => officeTokens.find(t => t.status === TokenStatus.IN_PROGRESS), [officeTokens]);
-    const completedCount = useMemo(() => officeTokens.filter(t => t.status === TokenStatus.COMPLETED).length, [officeTokens]);
 
-    // Effect to clear calling state once the in-progress token changes
+    // CURRENT SERVING TOKEN
+    const inProgressToken = useMemo(
+        () => officeTokens.find((t) => t.status === TokenStatus.IN_PROGRESS),
+        [officeTokens]
+    );
+
+    const completedCount = useMemo(
+        () => officeTokens.filter((t) => t.status === TokenStatus.COMPLETED).length,
+        [officeTokens]
+    );
+
+    // Fix calling state when token actually changes
     React.useEffect(() => {
         if (calling && inProgressToken?.id !== previousInProgressRef.current) {
             setCalling(false);
         }
     }, [inProgressToken, calling]);
 
-    const selectedOffice = offices.find(o => o.id === selectedOfficeId);
+    const handleCallNext = async () => {
+        if (!selectedOfficeId || calling) return;
+
+        setCallError('');
+        setCalling(true);
+
+        const current = inProgressToken;
+        previousInProgressRef.current = current?.id || null;
+
+        try {
+            await callNextToken(selectedOfficeId);
+        } catch (err: any) {
+            setCallError(err.message || 'Failed to call next student');
+            setCalling(false);
+        }
+    };
+
+    const selectedOffice = offices.find((o) => o.id === selectedOfficeId);
 
     if (staffOffices.length === 0) {
-        return <p className="text-center text-neutral-600">You are not assigned to any active offices.</p>
-    }
-    
-    if (!selectedOfficeId) {
-        // This state is briefly visible while the initial office is being set.
-        return <div className="text-center text-neutral-600">Loading office data...</div>;
+        return (
+            <p className="text-center text-neutral-600 mt-10">
+                You are not assigned to any active offices.
+            </p>
+        );
     }
 
+    if (!selectedOfficeId) {
+        return <p className="text-center text-neutral-600 mt-10">Loading office...</p>;
+    }
 
     return (
         <div className="h-screen flex flex-col overflow-hidden">
+            {/* HEADER */}
             <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 md:gap-0 mb-6 px-6 pt-2">
-                <h1 className="text-2xl md:text-3xl font-bold text-neutral-800">{selectedOffice?.name || 'Loading...'}</h1>
+                <h1 className="text-2xl md:text-3xl font-bold text-neutral-800">
+                    {selectedOffice?.name || 'Loading...'}
+                </h1>
+
                 {staffOffices.length > 1 && (
                     <select
                         value={selectedOfficeId || ''}
-                        onChange={e => setSelectedOfficeId(e.target.value)}
-                        className="w-full md:w-auto px-4 py-2 border border-neutral-300 rounded-lg bg-white text-neutral-900 shadow-sm focus:ring-primary-light focus:border-primary-light"
+                        onChange={(e) => setSelectedOfficeId(e.target.value)}
+                        className="w-full md:w-auto px-4 py-2 border border-neutral-300 rounded-lg bg-white text-neutral-900 shadow-sm"
                     >
-                        {staffOffices.map(o => <option key={o.id} value={o.id}>{o.name}</option>)}
+                        {staffOffices.map((o) => (
+                            <option key={o.id} value={o.id}>
+                                {o.name}
+                            </option>
+                        ))}
                     </select>
                 )}
             </div>
-            
+
+            {/* STAT CARDS */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 px-6">
                 <StatCard title="Students Waiting" value={waitingTokens.length} color="text-yellow-500" />
                 <StatCard title="Currently Serving" value={inProgressToken ? 1 : 0} color="text-blue-500" />
                 <StatCard title="Completed Today" value={completedCount} color="text-green-500" />
             </div>
 
+            {/* MAIN LAYOUT */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 px-6 pb-6 flex-1 overflow-hidden">
+
+                {/* WAITING LIST */}
                 <div className="lg:col-span-2 bg-white p-6 rounded-2xl shadow-xl border border-neutral-100 flex flex-col overflow-hidden">
                     <h3 className="text-xl font-bold text-neutral-800 mb-4">Waiting List</h3>
+
                     <div className="space-y-3 flex-1 overflow-y-auto pr-2">
                         {waitingTokens.length > 0 ? (
-                            waitingTokens.map((token, index) => <TokenCard key={token.id} token={token} position={index + 1} isServing={token.status === TokenStatus.IN_PROGRESS} />)
+                            waitingTokens.map((token, index) => (
+                                <TokenCard
+                                    key={token.id}
+                                    token={token}
+                                    position={index + 1}
+                                    isServing={false}
+                                />
+                            ))
                         ) : (
-                            <p className="text-center text-neutral-500 pt-10">No students are currently waiting.</p>
+                            <p className="text-center text-neutral-500 pt-10">
+                                No students are currently waiting.
+                            </p>
                         )}
                     </div>
                 </div>
+
+                {/* CURRENT SERVING */}
                 <div className="bg-white p-6 rounded-2xl shadow-xl border border-neutral-100 flex flex-col h-full">
+
                     {!inProgressToken ? (
+                        /* NO CURRENT STUDENT */
                         <div className="flex flex-col items-center justify-center h-full w-full">
-                            <p className="text-neutral-600 mb-4 text-center">No one is currently being served.</p>
-                            {callError && <p className="text-red-500 text-sm mb-4 text-center">{callError}</p>}
+                            <p className="text-neutral-600 mb-4 text-center">
+                                No one is currently being served.
+                            </p>
+
+                            {callError && (
+                                <p className="text-red-500 text-sm mb-4 text-center">{callError}</p>
+                            )}
+
                             <button
                                 onClick={handleCallNext}
                                 disabled={waitingTokens.length === 0 || calling}
-                                className="w-full bg-secondary text-primary-dark font-bold py-3 rounded-lg hover:bg-secondary-dark active:scale-95 transition-all disabled:bg-neutral-300 disabled:cursor-not-allowed"
+                                className="w-full bg-secondary text-primary-dark font-bold py-3 rounded-lg hover:bg-secondary-dark disabled:bg-neutral-300"
                             >
-                                {calling ? (
-                                    <span className="flex items-center justify-center gap-2">
-                                        <span className="inline-block w-4 h-4 border-2 border-primary-dark border-t-transparent rounded-full animate-spin"></span>
-                                        Calling...
-                                    </span>
-                                ) : 'Call Next Student'}
+                                {calling ? 'Calling...' : 'Call Next Student'}
                             </button>
                         </div>
                     ) : (
+                        /* SERVING SOMEONE */
                         <div className="flex flex-col items-stretch w-full gap-5">
                             <CurrentServiceCard token={inProgressToken} isLoading={calling} />
+
+                            {/* IF NO ONE WAITING → SHOW COMPLETE BUTTON */}
                             {waitingTokens.length === 0 ? (
                                 <button
-                                    onClick={() => {
+                                    onClick={async () => {
                                         setCalling(true);
-                                        completeToken(inProgressToken.id).finally(() => setCalling(false));
+                                        await completeToken(inProgressToken.id);
+                                        setCalling(false);
                                     }}
-                                    disabled={calling}
-                                    className="w-full bg-secondary text-primary-dark font-bold py-3 rounded-lg hover:bg-secondary-dark active:scale-95 transition-all disabled:bg-neutral-300 disabled:cursor-not-allowed"
+                                    className="w-full bg-secondary text-primary-dark font-bold py-3 rounded-lg"
                                 >
-                                    {calling ? (
-                                        <span className="flex items-center justify-center gap-2">
-                                            <span className="inline-block w-4 h-4 border-2 border-primary-dark border-t-transparent rounded-full animate-spin"></span>
-                                            Completing...
-                                        </span>
-                                    ) : 'Mark Completed'}
+                                    {calling ? 'Completing...' : 'Mark Completed'}
                                 </button>
                             ) : (
                                 <button
                                     onClick={handleCallNext}
                                     disabled={calling}
-                                    className="w-full bg-secondary text-primary-dark font-bold py-3 rounded-lg hover:bg-secondary-dark active:scale-95 transition-all disabled:bg-neutral-300 disabled:cursor-not-allowed"
+                                    className="w-full bg-secondary text-primary-dark font-bold py-3 rounded-lg"
                                 >
-                                    {calling ? (
-                                        <span className="flex items-center justify-center gap-2">
-                                            <span className="inline-block w-4 h-4 border-2 border-primary-dark border-t-transparent rounded-full animate-spin"></span>
-                                            Calling...
-                                        </span>
-                                    ) : 'Call Next Student'}
+                                    {calling ? 'Calling...' : 'Call Next Student'}
                                 </button>
                             )}
                         </div>
