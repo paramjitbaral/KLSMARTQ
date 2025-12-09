@@ -1,13 +1,15 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useAppContext } from "../../context/AppContext";
-
+import { usePullToRefresh } from "./usePullToRefresh";
 import HolographicDeck from "./HolographicDeck";
 import LoginScreen from "./screens/LoginScreen";
 import SignupScreen from "./screens/SignupScreen";
 import VerifyOtpScreen from "./screens/VerifyOtpScreen";
 import ForgotPasswordScreen from "./screens/ForgotPasswordScreen";
 
+
 const StudentAuthPage = () => {
+  usePullToRefresh();
   const { login, signup, verifySignupOtp, resendSignupOtp, requestPasswordReset } =
     useAppContext();
 
