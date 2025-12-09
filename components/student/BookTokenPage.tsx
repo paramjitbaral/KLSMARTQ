@@ -1,96 +1,244 @@
+import React, { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAppContext } from "../../context/AppContext";
+import { Priority } from "../../types";
 
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAppContext } from '../../context/AppContext';
-import { Priority } from '../../types';
+const PRIMARY = "#0A4DBF"; // sidebar + button blue
+
+// Small chevron icon for dropdown
+const ChevronDownIcon: React.FC<{ className?: string }> = ({ className }) => (
+  <svg
+    className={className}
+    viewBox="0 0 20 20"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      d="M5 7.5L10 12.5L15 7.5"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+
+const PRIORITY_OPTIONS: Priority[] = [
+  Priority.NORMAL,
+  Priority.URGENT,
+  Priority.MEDICAL,
+];
 
 const BookTokenPage: React.FC = () => {
   const { offices, bookToken } = useAppContext();
   const navigate = useNavigate();
 
-  const [officeId, setOfficeId] = useState('');
-  const [purpose, setPurpose] = useState('');
+  const [officeId, setOfficeId] = useState("");
+  const [purpose, setPurpose] = useState("");
   const [priority, setPriority] = useState<Priority>(Priority.NORMAL);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const activeOffices = offices.filter(o => o.isActive);
+  const [officeOpen, setOfficeOpen] = useState(false);
+
+  const dropdownRef = useRef<HTMLDivElement | null>(null);
+
+  const activeOffices = offices.filter((o) => o.isActive);
+
+  // find selected office name
+  const selectedOfficeName =
+    activeOffices.find((o) => o.id === officeId)?.name || "Choose an office...";
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setOfficeOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!officeId || !purpose) {
-      setError('Please select an office and state your purpose.');
+      setError("Please select an office and state your purpose.");
       return;
     }
-    setError('');
+    setError("");
     setLoading(true);
     try {
       await bookToken(officeId, purpose, priority);
-      // Only navigate after successful booking
-      navigate('/dashboard');
+      navigate("/dashboard");
     } catch (err: any) {
-      setError(err.message || 'Failed to book token. Please try again.');
+      setError(err.message || "Failed to book token. Please try again.");
       setLoading(false);
     }
   };
 
   return (
-    <div>
-      <h1 className="text-3xl font-bold text-neutral-800 mb-6">Book a New Token</h1>
-      <div className="max-w-2xl mx-auto bg-white p-8 rounded-xl shadow-md border border-neutral-200">
+    <div className="w-full">
+      {/* Heading only on mobile */}
+      <h1 className="text-2xl font-bold text-neutral-900 mb-4 lg:hidden text-center">
+        Book a New Token
+      </h1>
+
+      <div className="max-w-xl mx-auto bg-white p-6 lg:p-8 rounded-2xl shadow-md border border-neutral-200 mt-2 lg:mt-4">
         <form onSubmit={handleSubmit} className="space-y-6">
+          {/* OFFICE (custom dropdown) */}
           <div>
-            <label htmlFor="office" className="block text-sm font-medium text-neutral-700 mb-1">Select Office</label>
-            <select
-              id="office"
-              value={officeId}
-              onChange={(e) => setOfficeId(e.target.value)}
-              className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:ring-primary-light focus:border-primary-light bg-white text-neutral-900"
-            >
-              <option value="" disabled>Choose an office...</option>
-              {activeOffices.map(office => (
-                <option key={office.id} value={office.id}>{office.name}</option>
-              ))}
-            </select>
+            <label className="block text-sm font-semibold text-neutral-700 mb-2">
+              Select Office
+            </label>
+
+            <div ref={dropdownRef} className="relative">
+              <button
+                type="button"
+                onClick={() => setOfficeOpen((o) => !o)}
+                className="
+                  w-full px-4 py-3 
+                  rounded-lg border border-neutral-300 
+                  bg-white text-neutral-900 
+                  flex items-center justify-between
+                  text-sm lg:text-base
+                  focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-blue-400
+                  transition
+                "
+              >
+                <span
+                  className={
+                    officeId ? "text-neutral-900" : "text-neutral-400"
+                  }
+                >
+                  {selectedOfficeName}
+                </span>
+                <ChevronDownIcon className="w-4 h-4 text-neutral-500" />
+              </button>
+
+              {officeOpen && (
+                <div
+                  className="
+                    absolute left-0 right-0 mt-2
+                    bg-white rounded-xl shadow-lg border border-neutral-200 
+                    z-30 max-h-56 overflow-y-auto
+                  "
+                >
+                  {activeOffices.length === 0 && (
+                    <div className="px-4 py-3 text-sm text-neutral-500">
+                      No active offices available.
+                    </div>
+                  )}
+
+                  {activeOffices.map((office) => (
+                    <button
+                      key={office.id}
+                      type="button"
+                      onClick={() => {
+                        setOfficeId(office.id);
+                        setOfficeOpen(false);
+                      }}
+                      className={`
+                        w-full text-left px-4 py-2 text-sm
+                        ${
+                          officeId === office.id
+                            ? "bg-blue-50 text-[color:var(--primary)] font-semibold"
+                            : "text-neutral-800 hover:bg-neutral-50"
+                        }
+                      `}
+                      style={
+                        officeId === office.id
+                          ? { color: PRIMARY }
+                          : undefined
+                      }
+                    >
+                      {office.name}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
-          
+
+          {/* PURPOSE */}
           <div>
-            <label htmlFor="purpose" className="block text-sm font-medium text-neutral-700 mb-1">Purpose of Visit</label>
+            <label
+              htmlFor="purpose"
+              className="block text-sm font-semibold text-neutral-700 mb-2"
+            >
+              Purpose of Visit
+            </label>
             <input
-              type="text"
               id="purpose"
+              type="text"
               value={purpose}
               onChange={(e) => setPurpose(e.target.value)}
-              placeholder="e.g., 'Fee Payment', 'Transcript Request'"
-              className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:ring-primary-light focus:border-primary-light bg-white text-neutral-900"
+              placeholder="e.g., Fee Payment, Transcript Request"
+              className="
+                w-full px-4 py-3 
+                rounded-lg border border-neutral-300 
+                bg-white text-neutral-900 
+                text-sm lg:text-base
+                focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-blue-400
+                transition
+              "
             />
           </div>
 
+          {/* PRIORITY */}
           <div>
-            <label className="block text-sm font-medium text-neutral-700 mb-2">Priority</label>
-            <div className="flex space-x-4">
-              {Object.values(Priority).map(p => (
+            <label className="block text-sm font-semibold text-neutral-700 mb-2">
+              Priority
+            </label>
+            <div className="grid grid-cols-3 gap-3">
+              {PRIORITY_OPTIONS.map((p) => (
                 <button
                   key={p}
                   type="button"
                   onClick={() => setPriority(p)}
-                  className={`px-4 py-2 rounded-lg font-semibold transition-colors duration-200 ${priority === p ? 'bg-primary-dark text-white' : 'bg-neutral-200 text-neutral-700 hover:bg-neutral-300'}`}
+                  className={`
+                    py-2 rounded-lg text-sm font-medium border transition
+                    ${
+                      priority === p
+                        ? "text-white border-transparent"
+                        : "border-neutral-300 text-neutral-700 bg-neutral-100 hover:bg-neutral-200"
+                    }
+                  `}
+                  style={
+                    priority === p
+                      ? { backgroundColor: PRIMARY }
+                      : undefined
+                  }
                 >
                   {p}
                 </button>
               ))}
             </div>
           </div>
-          
-          {error && <p className="text-red-500 text-sm">{error}</p>}
 
-          <div className="pt-4">
+          {/* ERROR */}
+          {error && (
+            <p className="text-red-500 text-sm font-medium">{error}</p>
+          )}
+
+          {/* SUBMIT BUTTON */}
+          <div className="pt-1">
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-primary-dark text-white font-bold py-3 px-6 rounded-lg hover:bg-primary-light focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-dark transition-transform duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{ backgroundColor: PRIMARY }}
+              className="
+                w-full text-white font-semibold py-3 
+                rounded-lg shadow-md 
+                hover:opacity-90 transition 
+                disabled:opacity-50 disabled:cursor-not-allowed
+              "
             >
-              {loading ? 'Booking...' : 'Get Token'}
+              {loading ? "Booking..." : "Get Token"}
             </button>
           </div>
         </form>
