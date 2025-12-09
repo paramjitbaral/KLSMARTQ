@@ -41,7 +41,8 @@ const Ticket = ({ id, initialPos, phase, index, total }: TicketProps) => {
     <div
       className="
         absolute top-1/2 left-1/2
-        w-44 h-28 md:w-60 md:h-36
+        w-56 h-36 md:w-60 md:h-40
+
         rounded-xl flex flex-col justify-between p-4
         transition-all duration-[1300ms] ease-out
         shadow-[0_10px_40px_rgba(0,0,0,0.4)]

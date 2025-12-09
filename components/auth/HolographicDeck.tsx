@@ -94,11 +94,16 @@ const HolographicDeck = ({ onComplete }: { onComplete: () => void }) => {
       {/* BACKGROUND WORD */}
       <div className="absolute inset-0 pointer-events-none flex items-center justify-center opacity-10">
         <h1
-          className="text-[20vw] font-bold leading-none tracking-tight transition-all duration-[1600ms]"
-          style={{
-            transform: phase === 1 ? "scale(0.88)" : "scale(1)",
-          }}
-        >
+            className={`
+            font-bold leading-none tracking-tight
+            transition-all duration-[1600ms]
+            text-[40vw] md:text-[20vw]
+       `}
+  style={{
+    transform: phase === 1 ? "scale(0.88)" : "scale(1)",
+  }}
+>
+
           {phase === 0 ? "CHAOS" : phase === 1 ? "ORDER" : "FLOW"}
         </h1>
       </div>
