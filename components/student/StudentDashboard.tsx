@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from "react";
+import React, { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAppContext } from "../../context/AppContext";
 import { Token, TokenStatus } from "../../types";
@@ -12,8 +12,6 @@ const StudentDashboard: React.FC = () => {
     tokens,
     offices,
     scanOfficeQr,
-    notifications,
-    clearNotification,
   } = useAppContext();
 
   const [tokenToCheckIn, setTokenToCheckIn] = useState<Token | null>(null);
@@ -43,71 +41,87 @@ const StudentDashboard: React.FC = () => {
     setTokenToCheckIn(null);
   };
 
-  /* ------------ SIMPLE STAT CARD COMPONENT ------------ */
-  const StatCard = ({
-    title,
-    value,
-    color,
-    show = true,
-  }: {
-    title: string;
-    value: number;
-    color: string;
-    show?: boolean;
-  }) =>
-    !show ? null : (
+  return (
+    <div className="space-y-10 pb-10">
+
+     {/* FINAL PERFECT MOBILE + DESKTOP FIX */}
+<div className="w-full flex justify-center mt-4">
+  <div
+    className="
+      flex justify-center 
+      gap-3 md:gap-10
+      py-2 
+      w-full max-w-5xl
+    "
+  >
+    {[
+      {
+        title: "Active Tokens",
+        value: activeTokens.length,
+        color: "from-blue-400 to-indigo-400",
+        showOnMobile: true,
+      },
+      {
+        title: "Processing Now",
+        value: activeTokens.filter(
+          (t) => t.status === TokenStatus.IN_PROGRESS
+        ).length,
+        color: "from-purple-400 to-pink-400",
+        showOnMobile: false,
+      },
+      {
+        title: "Total Tokens",
+        value: tokens.filter((t) => t.studentId === currentUser?.id).length,
+        color: "from-green-400 to-teal-400",
+        showOnMobile: true,
+      },
+    ].map((item, i) => (
       <div
+        key={i}
         className={`
-          flex flex-col justify-center items-center
-          rounded-2xl px-6 py-4
-          w-32 h-20 md:w-44 md:h-24
-          bg-gradient-to-br ${color} 
-          text-center
-          transition-all duration-200
-          hover:scale-[1.02]
+          relative 
+          
+          /* 👉 PERFECT MOBILE SIZE = EXACT FIT */
+          w-[42vw] h-24            /* fits two cards side-by-side */
+          rounded-2xl
+          overflow-hidden
+          shrink-0
+
+          /* Desktop size */
+          md:w-56 md:h-32
+
+          bg-white/70 backdrop-blur-xl
+          border border-white/30
+          flex flex-col items-center justify-center
+          transition-all duration-300
+          hover:scale-[1.03]
+
+          ${item.showOnMobile ? "flex" : "hidden md:flex"}
         `}
       >
-        <p className="text-[10px] md:text-xs font-semibold tracking-wide text-white/80">
-          {title}
-        </p>
-        <p className="text-xl md:text-3xl font-extrabold text-white mt-1">
-          {value}
-        </p>
-      </div>
-    );
+        <div
+          className={`absolute inset-0 bg-gradient-to-br ${item.color} opacity-[0.15]`}
+        />
 
-  return (
-    <div className="space-y-8">
+        <div className="relative z-10 text-center leading-tight">
+          <p className="text-[10px] uppercase tracking-wide font-semibold text-slate-600">
+            {item.title}
+          </p>
 
-      {/* ----------- STATS SECTION ----------- */}
-      <div className="w-full flex justify-center mt-2">
-        <div className="flex gap-3 md:gap-6">
-
-          {/* Active Tokens */}
-          <StatCard
-            title="Active Tokens"
-            value={activeTokens.length}
-            color="from-blue-500 to-indigo-500"
-          />
-
-          {/* Processing Now - hidden on mobile */}
-          <StatCard
-            title="Processing Now"
-            value={activeTokens.filter((t) => t.status === TokenStatus.IN_PROGRESS).length}
-            color="from-purple-500 to-pink-500"
-            show={false}  // hidden for now as per your request
-          />
-
-          {/* Total Tokens */}
-          <StatCard
-            title="Total Tokens"
-            value={tokens.filter((t) => t.studentId === currentUser?.id).length}
-            color="from-emerald-500 to-teal-500"
-          />
+          <p className="text-2xl font-extrabold text-slate-900 mt-1">
+            {item.value}
+          </p>
         </div>
       </div>
+    ))}
+  </div>
+</div>
 
-      {/* -------- ACTIVE TOKENS -------- */}
+
+      {/* ------------------------------------------------------ */}
+      {/* ACTIVE TOKENS LIST */}
+      {/* ------------------------------------------------------ */}
+
       {activeTokens.length > 0 ? (
         <div className="space-y-6">
           <h2 className="text-xl font-semibold text-neutral-700">
@@ -154,7 +168,7 @@ const StudentDashboard: React.FC = () => {
         </div>
       )}
 
-      {/* -------- CAMERA MODAL -------- */}
+      {/* CAMERA MODAL */}
       {tokenToCheckIn && (
         <ScannerModal
           token={tokenToCheckIn}
