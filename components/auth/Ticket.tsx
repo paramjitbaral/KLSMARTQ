@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 
 export interface TicketProps {
   id: number;
@@ -9,6 +9,13 @@ export interface TicketProps {
 }
 
 const Ticket = ({ id, initialPos, phase, index, total }: TicketProps) => {
+  /* ✅ Detect Mobile Correctly */
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    setIsMobile(window.innerWidth < 768);
+  }, []);
+
   const getTransform = () => {
     if (phase === 0) {
       return `
@@ -43,7 +50,7 @@ const Ticket = ({ id, initialPos, phase, index, total }: TicketProps) => {
         absolute top-1/2 left-1/2
         w-44 h-28 md:w-60 md:h-36
         rounded-xl flex flex-col justify-between p-4
-        transition-all duration-[1300ms] ease-out
+        transition-all ease-out
         shadow-[0_10px_40px_rgba(0,0,0,0.4)]
         border border-white/10
       "
@@ -53,10 +60,12 @@ const Ticket = ({ id, initialPos, phase, index, total }: TicketProps) => {
         marginTop: "-3.5rem",
         opacity: phase === 2 ? (index % 2 === 0 ? 1 : 0) : 0.85,
         transitionDelay: `${index * 80}ms`,
-         transitionDuration:
-            window.innerWidth < 768
-            ? (phase === 1 ? "450ms" : "900ms") // 📱 Mobile fast
-            : (phase === 1 ? "700ms" : "1500ms"), // 💻 Desktop cinematic
+
+        /* ✅ Mobile animation finally applied */
+        transitionDuration: isMobile
+          ? (phase === 1 ? "450ms" : "900ms") // mobile
+          : (phase === 1 ? "700ms" : "1500ms"), // desktop
+
         background: "rgba(255,255,255,0.06)",
         backdropFilter: "blur(6px)",
         WebkitBackdropFilter: "blur(6px)",
