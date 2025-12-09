@@ -44,76 +44,44 @@ const StudentDashboard: React.FC = () => {
   return (
     <div className="space-y-10 pb-10">
 
-     {/* FINAL PERFECT MOBILE + DESKTOP FIX */}
-<div className="w-full flex justify-center mt-4">
-  <div
-    className="
-      flex justify-center 
-      gap-3 md:gap-10
-      py-2 
-      w-full max-w-5xl
-    "
-  >
+     {/* RESPONSIVE STATS THAT MATCH TOKEN CARD WIDTH */}
+<div className="w-full flex justify-center">
+  <div className="w-full max-w-3xl mx-auto flex justify-between px-3 gap-3">
+
     {[
-      {
-        title: "Active Tokens",
-        value: activeTokens.length,
-        color: "from-blue-400 to-indigo-400",
-        showOnMobile: true,
-      },
-      {
-        title: "Processing Now",
-        value: activeTokens.filter(
-          (t) => t.status === TokenStatus.IN_PROGRESS
-        ).length,
-        color: "from-purple-400 to-pink-400",
-        showOnMobile: false,
-      },
-      {
-        title: "Total Tokens",
-        value: tokens.filter((t) => t.studentId === currentUser?.id).length,
-        color: "from-green-400 to-teal-400",
-        showOnMobile: true,
-      },
+      { title: "Active Tokens", value: activeTokens.length, color: "from-blue-100 to-blue-200", mobile: true },
+      { title: "Processing Now", value: activeTokens.filter(t => t.status === TokenStatus.IN_PROGRESS).length, color: "from-purple-100 to-pink-100", mobile: false },
+      { title: "Total Tokens", value: tokens.filter(t => t.studentId === currentUser?.id).length, color: "from-green-100 to-green-200", mobile: true },
     ].map((item, i) => (
       <div
         key={i}
         className={`
-          relative 
-          
-          /* 👉 PERFECT MOBILE SIZE = EXACT FIT */
-          w-[42vw] h-24            /* fits two cards side-by-side */
-          rounded-2xl
-          overflow-hidden
-          shrink-0
-
-          /* Desktop size */
-          md:w-56 md:h-32
-
-          bg-white/70 backdrop-blur-xl
-          border border-white/30
           flex flex-col items-center justify-center
-          transition-all duration-300
-          hover:scale-[1.03]
+          rounded-3xl bg-gradient-to-br ${item.color}
+          border border-gray-200 backdrop-blur-xl
 
-          ${item.showOnMobile ? "flex" : "hidden md:flex"}
+          /* MATCH TOKEN CARD WIDTH AREA */
+          flex-1
+
+          /* DESKTOP SIZE */
+          md:h-32 md:min-w-[180px]
+
+          /* MOBILE SIZE — Slightly reduced but not tiny */
+          h-24 min-w-[130px]
+
+          /* Hide middle card on mobile */
+          ${item.mobile ? "flex" : "hidden md:flex"}
         `}
       >
-        <div
-          className={`absolute inset-0 bg-gradient-to-br ${item.color} opacity-[0.15]`}
-        />
-
-        <div className="relative z-10 text-center leading-tight">
-          <p className="text-[10px] uppercase tracking-wide font-semibold text-slate-600">
-            {item.title}
-          </p>
-
-          <p className="text-2xl font-extrabold text-slate-900 mt-1">
-            {item.value}
-          </p>
-        </div>
+        <p className="text-[10px] uppercase tracking-wide font-semibold text-gray-600">
+          {item.title}
+        </p>
+        <p className="text-3xl font-extrabold text-gray-900 mt-1">
+          {item.value}
+        </p>
       </div>
     ))}
+
   </div>
 </div>
 
