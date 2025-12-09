@@ -6,7 +6,6 @@ import LoginScreen from "./screens/LoginScreen";
 import SignupScreen from "./screens/SignupScreen";
 import VerifyOtpScreen from "./screens/VerifyOtpScreen";
 import ForgotPasswordScreen from "./screens/ForgotPasswordScreen";
-import PullToRefresh from "./PullToRefresh";
 
 
 const StudentAuthPage = () => {
@@ -154,9 +153,6 @@ const StudentAuthPage = () => {
       className="w-full h-screen bg-slate-950 flex overflow-hidden relative selection:bg-emerald-500/30 selection:text-white"
       style={{ fontFamily: "'Space Grotesk', sans-serif" }}
     >
-      {/* 🌟 GLOBAL PULL-TO-REFRESH */}
-    <PullToRefresh onRefresh={() => window.location.reload()} />
-      
       {/* LEFT — HOLOGRAPHIC ONBOARDING */}
       <div
         className={`
