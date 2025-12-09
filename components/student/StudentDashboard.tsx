@@ -49,9 +49,9 @@ const StudentDashboard: React.FC = () => {
   <div className="w-full max-w-3xl mx-auto flex justify-between px-3 gap-3">
 
     {[
-      { title: "Active Tokens", value: activeTokens.length, color: "from-blue-100 to-blue-200", mobile: true },
-      { title: "Processing Now", value: activeTokens.filter(t => t.status === TokenStatus.IN_PROGRESS).length, color: "from-purple-100 to-pink-100", mobile: false },
-      { title: "Total Tokens", value: tokens.filter(t => t.studentId === currentUser?.id).length, color: "from-green-100 to-green-200", mobile: true },
+      { title: "Active Tokens", value: activeTokens.length, color: "from-blue-50 to-blue-100", mobile: true },
+      { title: "Processing Now", value: activeTokens.filter(t => t.status === TokenStatus.IN_PROGRESS).length, color: "from-purple-50 to-pink-100", mobile: false },
+      { title: "Total Tokens", value: tokens.filter(t => t.studentId === currentUser?.id).length, color: "from-green-50 to-green-100", mobile: true },
     ].map((item, i) => (
       <div
         key={i}
@@ -60,23 +60,24 @@ const StudentDashboard: React.FC = () => {
           rounded-3xl bg-gradient-to-br ${item.color}
           border border-gray-200 backdrop-blur-xl
 
-          /* MATCH TOKEN CARD WIDTH AREA */
           flex-1
 
-          /* DESKTOP SIZE */
+          /* DESKTOP HEIGHT */
           md:h-32 md:min-w-[180px]
 
-          /* MOBILE SIZE — Slightly reduced but not tiny */
+          /* MOBILE HEIGHT */
           h-24 min-w-[130px]
 
-          /* Hide middle card on mobile */
           ${item.mobile ? "flex" : "hidden md:flex"}
         `}
       >
-        <p className="text-[10px] uppercase tracking-wide font-semibold text-gray-600">
+        {/* TITLE */}
+        <p className="text-[10px] md:text-xs uppercase tracking-wide font-semibold text-gray-600">
           {item.title}
         </p>
-        <p className="text-3xl font-extrabold text-gray-900 mt-1">
+
+        {/* VALUE */}
+        <p className="text-3xl md:text-4xl font-extrabold text-gray-900 mt-1">
           {item.value}
         </p>
       </div>
@@ -84,6 +85,7 @@ const StudentDashboard: React.FC = () => {
 
   </div>
 </div>
+
 
 
       {/* ------------------------------------------------------ */}
