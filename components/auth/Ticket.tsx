@@ -43,7 +43,7 @@ const Ticket = ({ id, initialPos, phase, index, total }: TicketProps) => {
         absolute top-1/2 left-1/2
         w-44 h-28 md:w-60 md:h-36
         rounded-xl flex flex-col justify-between p-4
-        transition-all duration-[1000ms] ease-out
+        transition-all duration-[1300ms] ease-out
         shadow-[0_10px_40px_rgba(0,0,0,0.4)]
         border border-white/10
       "
@@ -53,6 +53,8 @@ const Ticket = ({ id, initialPos, phase, index, total }: TicketProps) => {
         marginTop: "-3.5rem",
         opacity: phase === 2 ? (index % 2 === 0 ? 1 : 0) : 0.85,
         transitionDelay: `${index * 80}ms`,
+         /* ⭐ MAKE STEP-2 FASTER, OTHERS SLOWER */
+        transitionDuration: phase === 1 ? "700ms" : "1300ms",
         background: "rgba(255,255,255,0.06)",
         backdropFilter: "blur(6px)",
         WebkitBackdropFilter: "blur(6px)",
