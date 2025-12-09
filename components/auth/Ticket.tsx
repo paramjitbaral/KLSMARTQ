@@ -53,8 +53,10 @@ const Ticket = ({ id, initialPos, phase, index, total }: TicketProps) => {
         marginTop: "-3.5rem",
         opacity: phase === 2 ? (index % 2 === 0 ? 1 : 0) : 0.85,
         transitionDelay: `${index * 80}ms`,
-         /* ⭐ MAKE STEP-2 FASTER, OTHERS SLOWER */
-        transitionDuration: phase === 1 ? "700ms" : "1300ms",
+         transitionDuration:
+            window.innerWidth < 768
+            ? (phase === 1 ? "450ms" : "900ms") // 📱 Mobile fast
+            : (phase === 1 ? "700ms" : "1500ms"), // 💻 Desktop cinematic
         background: "rgba(255,255,255,0.06)",
         backdropFilter: "blur(6px)",
         WebkitBackdropFilter: "blur(6px)",
