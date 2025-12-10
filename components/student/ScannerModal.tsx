@@ -99,23 +99,28 @@ const ScannerModal: React.FC<{
   }, [cameraState, tick]);
 
   /* ----------------- ACTIVATE CAMERA ----------------- */
-  const activateCamera = async () => {
-    try {
-      setCameraState("requesting");
+ const activateCamera = async () => {
+  try {
+    setCameraState("requesting");
 
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: "environment" },
-      });
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: {
+        facingMode: { ideal: "environment" }, // Fix for Android/iOS
+        width: { ideal: 1280 },
+        height: { ideal: 720 },
+      },
+      audio: false,
+    });
 
-      streamRef.current = stream;
-
-      setCameraState("active");
-      setError("");
-    } catch (err: any) {
-      setError("Camera error. Please allow permission and try again.");
-      setCameraState("error");
-    }
-  };
+    streamRef.current = stream;
+    setCameraState("active");
+    setError("");
+  } catch (err: any) {
+    console.error("MOBILE CAMERA ERROR:", err);
+    setError("Unable to access your camera. Please allow permission.");
+    setCameraState("error");
+  }
+};
 
   /* ----------------- CLEANUP ON UNMOUNT ----------------- */
   useEffect(() => {

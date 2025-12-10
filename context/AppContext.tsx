@@ -257,7 +257,8 @@ useEffect(() => {
         email: p.email,
         universityId: p.university_id,
         role: p.role,
-        assignedOfficeIds: p.assigned_office_ids
+        assignedOfficeIds: p.assigned_office_ids ?? []
+
       };
 
       currentUserRef.current = userProfile;
@@ -744,83 +745,54 @@ const checkInStudent = async (tokenId: string) => {
 // SCAN OFFICE QR  ✅ ONLY HERE WE SET IN_PROGRESS + ETA
 // -------------------------------------------------------
 const scanOfficeQr = async (studentId: string, officeId: string) => {
-  // -------------------------------
-  // 1. Fetch & Sort Office Tokens
-  // -------------------------------
   const officeTokens = tokens
     .filter((t) => t.officeId === officeId)
     .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
 
-  const waitingList = officeTokens.filter(
-    (t) => t.status === TokenStatus.WAITING
-  );
-  const inProgressToken = officeTokens.find(
-    (t) => t.status === TokenStatus.IN_PROGRESS
-  );
+  const waitingList = officeTokens.filter((t) => t.status === TokenStatus.WAITING);
+  const inProgressToken = officeTokens.find((t) => t.status === TokenStatus.IN_PROGRESS);
   const nextWaiting = waitingList[0];
 
-  // ❌ Someone already being served → block scanning for others
   if (inProgressToken && inProgressToken.studentId !== studentId) {
     throw new Error("Another student is currently being served. Please wait.");
   }
 
-  // ❌ Student scanning out of turn → block
-  if (nextWaiting && nextWaiting.studentId !== studentId) {
+  if (!nextWaiting || nextWaiting.studentId !== studentId) {
     throw new Error("You are not next in queue. Please wait for your turn.");
   }
 
-  // -------------------------------
-  // 2. Mark this student's token as IN_PROGRESS
-  // -------------------------------
+  // ONLY UPDATE THIS SPECIFIC TOKEN
   const now = new Date();
   await supabase
     .from("tokens")
     .update({
       status: TokenStatus.IN_PROGRESS,
       called_at: now.toISOString(),
-      is_checked_in: true,
+      is_checked_in: true
     })
-    .eq("student_id", studentId)
-    .eq("office_id", officeId)
-    .eq("status", TokenStatus.WAITING); // still waiting → now in progress
+    .eq("id", nextWaiting.id);   // IMPORTANT FIX
 
-  // -------------------------------
-  // 3. Calculate ETA for next student (average handle time)
-  // -------------------------------
+  // Calculate ETA + notify next
   const completedTokens = officeTokens
-    .filter(
-      (t) =>
-        t.status === TokenStatus.COMPLETED && t.calledAt && t.completedAt
-    )
-    .slice(-10); // last 10 records
+    .filter((t) => t.status === TokenStatus.COMPLETED && t.calledAt && t.completedAt)
+    .slice(-10);
 
-  let avgMinutes = 3; // default fallback
-
+  let avgMinutes = 3;
   if (completedTokens.length > 0) {
-    const totalTimeMs = completedTokens.reduce((sum, t) => {
-      const start = new Date(t.calledAt!).getTime();
-      const end = new Date(t.completedAt!).getTime();
-      return sum + (end - start);
+    const totalTime = completedTokens.reduce((sum, t) => {
+      return sum + (new Date(t.completedAt!).getTime() - new Date(t.calledAt).getTime());
     }, 0);
-
-    const avgMs = totalTimeMs / completedTokens.length;
-    avgMinutes = Math.max(1, Math.round(avgMs / 60000)); // ms → minutes
+    avgMinutes = Math.max(1, Math.round(totalTime / completedTokens.length / 60000));
   }
 
-  // -------------------------------
-  // 4. Notify NEXT student in line
-  // -------------------------------
   const nextAfter = waitingList[1];
   if (nextAfter) {
     await supabase.from("notifications").insert({
       user_id: nextAfter.studentId,
-      message: `Get ready! You are next. Estimated time: ${avgMinutes} minutes.`,
+      message: `Get ready! You are next. Estimated time: ${avgMinutes} minutes.`
     });
   }
 
-  // -------------------------------
-  // 5. Refresh state so UI reflects changes
-  // -------------------------------
   await refreshTokens();
 };
 
