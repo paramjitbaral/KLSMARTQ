@@ -119,14 +119,23 @@ const Sidebar = ({ onClose }: { onClose: () => void }) => {
 /* ----------------------------------------------
    HEADER
 ---------------------------------------------- */
+/* ----------------------------------------------
+   HEADER (FIXED WITH OFFICE NAME)
+---------------------------------------------- */
 const Header = ({ onMenuClick }: { onMenuClick: () => void }) => {
-  const { currentUser } = useAppContext();
+  const { currentUser, offices } = useAppContext();
+
+  // Get first assigned office name for staff
+  const officeName =
+    currentUser?.role === "Staff"
+      ? offices.find((o) => currentUser?.assignedOfficeIds?.includes(o.id))?.name
+      : null;
 
   return (
     <header
       className="
-        bg-[#1F2837] text-white          /* MOBILE */
-        lg:bg-white lg:text-gray-900     /* DESKTOP */
+        bg-[#1F2837] text-white
+        lg:bg-white lg:text-gray-900
         shadow-sm border-b border-gray-200
         p-4 flex items-center justify-between w-full
       "
@@ -139,10 +148,16 @@ const Header = ({ onMenuClick }: { onMenuClick: () => void }) => {
       {/* Profile */}
       <div className="ml-auto flex items-center gap-3">
         <div className="text-right">
-          <p className="font-semibold">{currentUser?.name}</p>
-          <p className="text-sm opacity-80 lg:text-gray-500 text-white">
-            {currentUser?.role}
-          </p>
+          <p className="text-[15px] font-semibold leading-tight">
+  {currentUser?.name}
+</p>
+
+{officeName && (
+  <p className="text-xs text-gray-500 lg:text-gray-400 uppercase tracking-wide">
+    {officeName}
+  </p>
+)}
+
         </div>
 
         <div
@@ -150,7 +165,7 @@ const Header = ({ onMenuClick }: { onMenuClick: () => void }) => {
             w-10 h-10 rounded-full flex items-center justify-center font-bold
             text-white
           "
-          style={{ backgroundColor: "#0A4DBF" }}  // same blue as your button
+          style={{ backgroundColor: "#0A4DBF" }}
         >
           {currentUser?.name?.[0]}
         </div>
@@ -158,6 +173,7 @@ const Header = ({ onMenuClick }: { onMenuClick: () => void }) => {
     </header>
   );
 };
+
 
 
 
