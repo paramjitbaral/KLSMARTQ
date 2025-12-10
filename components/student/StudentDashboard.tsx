@@ -32,14 +32,40 @@ const StudentDashboard: React.FC = () => {
 
   /* ------------ SCAN SUCCESS ------------ */
   const handleScanSuccess = async (tokenId: string) => {
-    if (!currentUser) return;
+  if (!currentUser) return;
 
-    const token = tokens.find((t) => t.id === tokenId);
-    if (!token) return;
+  const token = tokens.find((t) => t.id === tokenId);
+  if (!token) return;
 
-    await scanOfficeQr(currentUser.id, token.officeId);
-    setTokenToCheckIn(null);
-  };
+  const officeId = token.officeId;
+
+  // 1️⃣ Get tokens for this office
+  const officeTokens = tokens
+    .filter((t) => t.officeId === officeId)
+    .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
+
+  const waitingList = officeTokens.filter((t) => t.status === TokenStatus.WAITING);
+  const inProgressToken = officeTokens.find((t) => t.status === TokenStatus.IN_PROGRESS);
+
+  // 2️⃣ Prevent scanning if another student is IN_PROGRESS
+  if (inProgressToken && inProgressToken.id !== tokenId) {
+    alert("You cannot scan. Another student is currently being served.");
+    return;
+  }
+
+  // 3️⃣ Ensure it's the user's turn
+  const nextWaiting = waitingList[0];
+  if (nextWaiting && nextWaiting.id !== tokenId) {
+    alert("Please wait for your turn. You are not next in queue.");
+    return;
+  }
+
+  // 4️⃣ Call AppContext scan logic (fixing status + notifications)
+  await scanOfficeQr(currentUser.id, officeId);
+
+  setTokenToCheckIn(null);
+};
+
 
   return (
     <div className="space-y-10 pb-10">

@@ -763,16 +763,80 @@ const checkInStudent = async (tokenId: string) => {
 // SCAN OFFICE QR
 // -------------------------------------------------------
 const scanOfficeQr = async (studentId: string, officeId: string) => {
-  const officeName =
-    offices.find((o) => o.id === officeId)?.name || "the office";
+  // -------------------------------
+  // 1. Fetch & Sort Office Tokens
+  // -------------------------------
+  const officeTokens = tokens
+    .filter((t) => t.officeId === officeId)
+    .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
 
-  const { error } = await supabase.from("notifications").insert({
-    user_id: studentId,
-    message: `You checked in at ${officeName}`
-  });
+  const waitingList = officeTokens.filter((t) => t.status === TokenStatus.WAITING);
+  const inProgressToken = officeTokens.find((t) => t.status === TokenStatus.IN_PROGRESS);
+  const nextWaiting = waitingList[0];
 
-  if (error) throw new Error("QR Scan failed: " + error.message);
+  // Someone already being served → block scanning
+  if (inProgressToken && inProgressToken.studentId !== studentId) {
+    throw new Error("Another student is currently being served. Please wait.");
+  }
+
+  // Student scanning out of turn → block
+  if (nextWaiting && nextWaiting.studentId !== studentId) {
+    throw new Error("You are not next in queue. Please wait for your turn.");
+  }
+
+  // -------------------------------
+  // 2. Mark token as IN_PROGRESS
+  // -------------------------------
+  const now = new Date();
+  await supabase
+    .from("tokens")
+    .update({
+      status: TokenStatus.IN_PROGRESS,
+      called_at: now.toISOString(),
+      is_checked_in: true
+    })
+    .eq("student_id", studentId)
+    .eq("office_id", officeId)
+    .eq("status", TokenStatus.WAITING);
+
+  // -------------------------------
+  // 3. Calculate ETA for next student
+  // -------------------------------
+  // Completed tokens from the same office
+  const completedTokens = officeTokens
+    .filter((t) => t.status === TokenStatus.COMPLETED && t.calledAt && t.completedAt)
+    .slice(-10); // last 10 records for better accuracy
+
+  let avgMinutes = 3; // fallback if no history
+
+  if (completedTokens.length > 0) {
+    const totalTimeMs = completedTokens.reduce((sum, t) => {
+      const start = new Date(t.calledAt).getTime();
+      const end = new Date(t.completedAt!).getTime();
+      return sum + (end - start);
+    }, 0);
+
+    const avgMs = totalTimeMs / completedTokens.length;
+    avgMinutes = Math.max(1, Math.round(avgMs / 60000)); // convert ms → minutes
+  }
+
+  // -------------------------------
+  // 4. Notify next student
+  // -------------------------------
+  const nextAfter = waitingList[1];
+  if (nextAfter) {
+    await supabase.from("notifications").insert({
+      user_id: nextAfter.studentId,
+      message: `Get ready! You are next. Estimated time: ${avgMinutes} minutes.`
+    });
+  }
+
+  // -------------------------------
+  // 5. Refresh state
+  // -------------------------------
+  await refreshTokens();
 };
+
 
 // -------------------------------------------------------
 // OFFICE CRUD
