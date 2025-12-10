@@ -1,5 +1,5 @@
 import React from "react";
-import { Token } from "../../types";
+import { Token, TokenStatus } from "../../types";
 
 interface Props {
   token: Token;
@@ -7,6 +7,9 @@ interface Props {
 }
 
 const CurrentServiceCard: React.FC<Props> = ({ token, isLoading }) => {
+  // -----------------------------------------------------
+  //  SKELETON LOADING
+  // -----------------------------------------------------
   if (isLoading) {
     return (
       <div className="bg-white rounded-3xl p-7 shadow-[0_3px_30px_rgba(0,0,0,0.07)] border border-neutral-200">
@@ -20,6 +23,34 @@ const CurrentServiceCard: React.FC<Props> = ({ token, isLoading }) => {
     );
   }
 
+  // -----------------------------------------------------
+  //  NEW LOGIC: WAITING = SHOW "SCAN QR" MESSAGE
+  // -----------------------------------------------------
+  if (token.status === TokenStatus.WAITING) {
+    return (
+      <div className="bg-white rounded-3xl p-7 shadow-xl border border-neutral-200 text-center">
+        <h3 className="text-2xl font-bold text-neutral-800 mb-2">
+          {token.tokenNumber}
+        </h3>
+
+        <p className="text-neutral-600 text-sm font-medium mb-3">
+          {token.student?.name}
+        </p>
+
+        <p className="text-blue-600 font-semibold text-lg">
+          Waiting for student to scan the QR…
+        </p>
+
+        <p className="text-neutral-500 text-sm mt-2">
+          Once the student scans the QR code, the service will begin.
+        </p>
+      </div>
+    );
+  }
+
+  // -----------------------------------------------------
+  //  NORMAL IN-PROGRESS CARD
+  // -----------------------------------------------------
   return (
     <div className="relative bg-gradient-to-br from-indigo-600 via-blue-500 to-blue-400 text-white p-7 rounded-3xl shadow-xl overflow-hidden">
       <div className="absolute inset-0 bg-white/10 backdrop-blur-sm"></div>

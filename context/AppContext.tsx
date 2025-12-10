@@ -623,90 +623,74 @@ const bookToken = async (
 };
 
 // -------------------------------------------------------
-// CALL NEXT TOKEN (FULLY FIXED, CLEAN)
+// CALL NEXT TOKEN  ✅ DO NOT AUTO-SET NEXT TO IN_PROGRESS
 // -------------------------------------------------------
 const callNextToken = async (officeId: string) => {
   const before = [...tokens];
   const now = new Date();
 
   try {
+    // Current student being served (if any)
     const current = tokens.find(
       (t) => t.officeId === officeId && t.status === TokenStatus.IN_PROGRESS
     );
 
+    // Next student in queue (WAITING)
     const next = tokens.find(
       (t) => t.officeId === officeId && t.status === TokenStatus.WAITING
     );
 
     if (!next) throw new Error("No waiting students");
 
-    // Optimistic UI update
+    // ✅ Optimistic UI: only COMPLETE current, don't touch next
     setTokens((prev) =>
       prev.map((t) => {
         if (current && t.id === current.id) {
           return {
             ...t,
             status: TokenStatus.COMPLETED,
-            completedAt: now
-          };
-        }
-        if (t.id === next.id) {
-          return {
-            ...t,
-            status: TokenStatus.IN_PROGRESS,
-            calledAt: now
+            completedAt: now,
           };
         }
         return t;
       })
     );
 
-    // DB Updates
+    // ✅ DB: only mark current as COMPLETED
     const completePromise = current
       ? supabase
           .from("tokens")
           .update({
             status: TokenStatus.COMPLETED,
-            completed_at: now.toISOString()
+            completed_at: now.toISOString(),
           })
           .eq("id", current.id)
       : Promise.resolve({ error: null });
 
-    const callPromise = supabase
-      .from("tokens")
-      .update({
-        status: TokenStatus.IN_PROGRESS,
-        called_at: now.toISOString()
-      })
-      .eq("id", next.id);
+    const [res1] = await Promise.all([completePromise]);
 
-    const [res1, res2] = await Promise.all([completePromise, callPromise]);
-
-    if (res1.error)
+    if (res1.error) {
       console.warn("Auto-complete failed:", res1.error.message);
+    }
 
-    if (res2.error)
-      throw new Error("Call next failed: " + res2.error.message);
-
-    // Refresh tokens to correct inconsistent realtime delays
+    // 🔄 Refresh tokens to fix any realtime delays
     await refreshTokens();
 
-    // Notify next student
+    // 🔔 Notify NEXT student: they can now scan the QR
     await supabase.from("notifications").insert({
       user_id: next.studentId,
       message:
-        "Your turn! Please proceed to " +
-        (offices.find((o) => o.id === officeId)?.name || "the office")
+        "You're next! Please scan the office QR to start your turn.",
     });
   } catch (err) {
     console.error("callNextToken error:", err);
-    setTokens(before); // rollback
+    setTokens(before); // rollback UI if something failed
     throw err;
   }
 };
 
 // -------------------------------------------------------
-// COMPLETE TOKEN (FIXED FOR LAST STUDENT)
+// COMPLETE TOKEN (unchanged logic, just for manual complete)
 // -------------------------------------------------------
 const completeToken = async (tokenId: string) => {
   try {
@@ -719,7 +703,7 @@ const completeToken = async (tokenId: string) => {
           ? {
               ...t,
               status: TokenStatus.COMPLETED,
-              completedAt: now
+              completedAt: now,
             }
           : t
       )
@@ -730,7 +714,7 @@ const completeToken = async (tokenId: string) => {
       .from("tokens")
       .update({
         status: TokenStatus.COMPLETED,
-        completed_at: now.toISOString()
+        completed_at: now.toISOString(),
       })
       .eq("id", tokenId);
 
@@ -744,11 +728,8 @@ const completeToken = async (tokenId: string) => {
   }
 };
 
-// PART 3/4 END ---------------------------------------------------------------
-// PART 4/4 ---------------------------------------------------------------
-
 // -------------------------------------------------------
-// STUDENT CHECK-IN
+// STUDENT CHECK-IN (flag only, kept as-is)
 // -------------------------------------------------------
 const checkInStudent = async (tokenId: string) => {
   const { error } = await supabase
@@ -760,7 +741,7 @@ const checkInStudent = async (tokenId: string) => {
 };
 
 // -------------------------------------------------------
-// SCAN OFFICE QR
+// SCAN OFFICE QR  ✅ ONLY HERE WE SET IN_PROGRESS + ETA
 // -------------------------------------------------------
 const scanOfficeQr = async (studentId: string, officeId: string) => {
   // -------------------------------
@@ -770,22 +751,26 @@ const scanOfficeQr = async (studentId: string, officeId: string) => {
     .filter((t) => t.officeId === officeId)
     .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
 
-  const waitingList = officeTokens.filter((t) => t.status === TokenStatus.WAITING);
-  const inProgressToken = officeTokens.find((t) => t.status === TokenStatus.IN_PROGRESS);
+  const waitingList = officeTokens.filter(
+    (t) => t.status === TokenStatus.WAITING
+  );
+  const inProgressToken = officeTokens.find(
+    (t) => t.status === TokenStatus.IN_PROGRESS
+  );
   const nextWaiting = waitingList[0];
 
-  // Someone already being served → block scanning
+  // ❌ Someone already being served → block scanning for others
   if (inProgressToken && inProgressToken.studentId !== studentId) {
     throw new Error("Another student is currently being served. Please wait.");
   }
 
-  // Student scanning out of turn → block
+  // ❌ Student scanning out of turn → block
   if (nextWaiting && nextWaiting.studentId !== studentId) {
     throw new Error("You are not next in queue. Please wait for your turn.");
   }
 
   // -------------------------------
-  // 2. Mark token as IN_PROGRESS
+  // 2. Mark this student's token as IN_PROGRESS
   // -------------------------------
   const now = new Date();
   await supabase
@@ -793,49 +778,52 @@ const scanOfficeQr = async (studentId: string, officeId: string) => {
     .update({
       status: TokenStatus.IN_PROGRESS,
       called_at: now.toISOString(),
-      is_checked_in: true
+      is_checked_in: true,
     })
     .eq("student_id", studentId)
     .eq("office_id", officeId)
-    .eq("status", TokenStatus.WAITING);
+    .eq("status", TokenStatus.WAITING); // still waiting → now in progress
 
   // -------------------------------
-  // 3. Calculate ETA for next student
+  // 3. Calculate ETA for next student (average handle time)
   // -------------------------------
-  // Completed tokens from the same office
   const completedTokens = officeTokens
-    .filter((t) => t.status === TokenStatus.COMPLETED && t.calledAt && t.completedAt)
-    .slice(-10); // last 10 records for better accuracy
+    .filter(
+      (t) =>
+        t.status === TokenStatus.COMPLETED && t.calledAt && t.completedAt
+    )
+    .slice(-10); // last 10 records
 
-  let avgMinutes = 3; // fallback if no history
+  let avgMinutes = 3; // default fallback
 
   if (completedTokens.length > 0) {
     const totalTimeMs = completedTokens.reduce((sum, t) => {
-      const start = new Date(t.calledAt).getTime();
+      const start = new Date(t.calledAt!).getTime();
       const end = new Date(t.completedAt!).getTime();
       return sum + (end - start);
     }, 0);
 
     const avgMs = totalTimeMs / completedTokens.length;
-    avgMinutes = Math.max(1, Math.round(avgMs / 60000)); // convert ms → minutes
+    avgMinutes = Math.max(1, Math.round(avgMs / 60000)); // ms → minutes
   }
 
   // -------------------------------
-  // 4. Notify next student
+  // 4. Notify NEXT student in line
   // -------------------------------
   const nextAfter = waitingList[1];
   if (nextAfter) {
     await supabase.from("notifications").insert({
       user_id: nextAfter.studentId,
-      message: `Get ready! You are next. Estimated time: ${avgMinutes} minutes.`
+      message: `Get ready! You are next. Estimated time: ${avgMinutes} minutes.`,
     });
   }
 
   // -------------------------------
-  // 5. Refresh state
+  // 5. Refresh state so UI reflects changes
   // -------------------------------
   await refreshTokens();
 };
+
 
 
 // -------------------------------------------------------

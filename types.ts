@@ -11,10 +11,11 @@ export enum Priority {
 }
 
 export enum TokenStatus {
-  WAITING = 'Waiting',
-  IN_PROGRESS = 'In Progress',
-  COMPLETED = 'Completed',
-  CANCELLED = 'Cancelled',
+  WAITING = "Waiting",
+  CALLED = "Called",
+  IN_PROGRESS = "In Progress",
+  COMPLETED = "Completed",
+  CANCELLED = "Cancelled",
 }
 
 export interface User {

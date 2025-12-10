@@ -12,6 +12,7 @@ const StudentDashboard: React.FC = () => {
     tokens,
     offices,
     scanOfficeQr,
+    checkInStudent,        // ✅ REQUIRED FIX
   } = useAppContext();
 
   const [tokenToCheckIn, setTokenToCheckIn] = useState<Token | null>(null);
@@ -30,94 +31,80 @@ const StudentDashboard: React.FC = () => {
     [tokens, currentUser]
   );
 
-  /* ------------ SCAN SUCCESS ------------ */
+  /* ------------ SCAN SUCCESS (FINAL FIXED LOGIC) ------------ */
   const handleScanSuccess = async (tokenId: string) => {
-  if (!currentUser) return;
+    if (!currentUser) return;
 
-  const token = tokens.find((t) => t.id === tokenId);
-  if (!token) return;
+    const token = tokens.find((t) => t.id === tokenId);
+    if (!token) return;
 
-  const officeId = token.officeId;
+    const officeId = token.officeId;
 
-  // 1️⃣ Get tokens for this office
-  const officeTokens = tokens
-    .filter((t) => t.officeId === officeId)
-    .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
+    // 1️⃣ Get tokens for this office
+    const officeTokens = tokens
+      .filter((t) => t.officeId === officeId)
+      .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
 
-  const waitingList = officeTokens.filter((t) => t.status === TokenStatus.WAITING);
-  const inProgressToken = officeTokens.find((t) => t.status === TokenStatus.IN_PROGRESS);
+    const waitingList = officeTokens.filter((t) => t.status === TokenStatus.WAITING);
+    const inProgressToken = officeTokens.find((t) => t.status === TokenStatus.IN_PROGRESS);
+    const nextWaiting = waitingList[0];
 
-  // 2️⃣ Prevent scanning if another student is IN_PROGRESS
-  if (inProgressToken && inProgressToken.id !== tokenId) {
-    alert("You cannot scan. Another student is currently being served.");
-    return;
-  }
+    // 2️⃣ BLOCK if another student is in progress
+    if (inProgressToken && inProgressToken.id !== tokenId) {
+      alert("Another student is currently being served. Please wait.");
+      return;
+    }
 
-  // 3️⃣ Ensure it's the user's turn
-  const nextWaiting = waitingList[0];
-  if (nextWaiting && nextWaiting.id !== tokenId) {
-    alert("Please wait for your turn. You are not next in queue.");
-    return;
-  }
+    // 3️⃣ BLOCK if student is not next
+    if (nextWaiting && nextWaiting.id !== tokenId) {
+      alert("Please wait for your turn. You are not next in queue.");
+      return;
+    }
 
-  // 4️⃣ Call AppContext scan logic (fixing status + notifications)
-  await scanOfficeQr(currentUser.id, officeId);
+    // 4️⃣ BACKEND LOGIC → updates status, ETA, sends notifications
+    await scanOfficeQr(currentUser.id, officeId);
 
-  setTokenToCheckIn(null);
-};
+    // 5️⃣ MISSING PART → mark token checked-in
+    await checkInStudent(tokenId);
 
+    setTokenToCheckIn(null);
+  };
 
   return (
     <div className="space-y-10 pb-10">
 
-     {/* RESPONSIVE STATS THAT MATCH TOKEN CARD WIDTH */}
-<div className="w-full flex justify-center">
-  <div className="w-full max-w-3xl mx-auto flex justify-between px-3 gap-3">
-
-    {[
-      { title: "Active Tokens", value: activeTokens.length, color: "from-blue-50 to-blue-100", mobile: true },
-      { title: "Processing Now", value: activeTokens.filter(t => t.status === TokenStatus.IN_PROGRESS).length, color: "from-purple-50 to-pink-100", mobile: false },
-      { title: "Total Tokens", value: tokens.filter(t => t.studentId === currentUser?.id).length, color: "from-green-50 to-green-100", mobile: true },
-    ].map((item, i) => (
-      <div
-        key={i}
-        className={`
-          flex flex-col items-center justify-center
-          rounded-3xl bg-gradient-to-br ${item.color}
-          border border-gray-200 backdrop-blur-xl
-
-          flex-1
-
-          /* DESKTOP HEIGHT */
-          md:h-32 md:min-w-[180px]
-
-          /* MOBILE HEIGHT */
-          h-24 min-w-[130px]
-
-          ${item.mobile ? "flex" : "hidden md:flex"}
-        `}
-      >
-        {/* TITLE */}
-        <p className="text-[10px] md:text-xs uppercase tracking-wide font-semibold text-gray-600">
-          {item.title}
-        </p>
-
-        {/* VALUE */}
-        <p className="text-3xl md:text-4xl font-extrabold text-gray-900 mt-1">
-          {item.value}
-        </p>
+      {/* RESPONSIVE STATS */}
+      <div className="w-full flex justify-center">
+        <div className="w-full max-w-3xl mx-auto flex justify-between px-3 gap-3">
+          {[
+            { title: "Active Tokens", value: activeTokens.length, color: "from-blue-50 to-blue-100", mobile: true },
+            { title: "Processing Now", value: activeTokens.filter(t => t.status === TokenStatus.IN_PROGRESS).length, color: "from-purple-50 to-pink-100", mobile: false },
+            { title: "Total Tokens", value: tokens.filter(t => t.studentId === currentUser?.id).length, color: "from-green-50 to-green-100", mobile: true },
+          ].map((item, i) => (
+            <div
+              key={i}
+              className={`
+                flex flex-col items-center justify-center
+                rounded-3xl bg-gradient-to-br ${item.color}
+                border border-gray-200 backdrop-blur-xl
+                flex-1
+                md:h-32 md:min-w-[180px]
+                h-24 min-w-[130px]
+                ${item.mobile ? "flex" : "hidden md:flex"}
+              `}
+            >
+              <p className="text-[10px] md:text-xs uppercase tracking-wide font-semibold text-gray-600">
+                {item.title}
+              </p>
+              <p className="text-3xl md:text-4xl font-extrabold text-gray-900 mt-1">
+                {item.value}
+              </p>
+            </div>
+          ))}
+        </div>
       </div>
-    ))}
 
-  </div>
-</div>
-
-
-
-      {/* ------------------------------------------------------ */}
       {/* ACTIVE TOKENS LIST */}
-      {/* ------------------------------------------------------ */}
-
       {activeTokens.length > 0 ? (
         <div className="space-y-6">
           <h2 className="text-xl font-semibold text-neutral-700">

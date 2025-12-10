@@ -5,6 +5,7 @@ import { Token, TokenStatus } from "../../types";
 /* ---------------- STATUS COLORS ---------------- */
 const statusColor: Record<TokenStatus, string> = {
   "Waiting": "text-red-600",
+  "Called": "text-orange-600",
   "In Progress": "text-blue-600",
   "Completed": "text-green-600",
   "Cancelled": "text-gray-500",
