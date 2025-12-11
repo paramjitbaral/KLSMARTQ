@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useAppContext } from "../../context/AppContext";
 import { Token, TokenStatus, Priority } from "../../types";
 
@@ -11,17 +11,19 @@ const StatCard: React.FC<{ title: string; value: number | string; color: string;
   <div
     className={`
       flex flex-col items-center justify-center
-      rounded-[32px] bg-gradient-to-br ${color}
+      rounded-[24px]
+      bg-gradient-to-br ${color}
       flex-1
-      h-24 md:h-32
-      min-w-[130px] md:min-w-[200px]
+      h-20 md:h-32
+      min-w-[110px] md:min-w-[200px]
+      border border-gray-200
       ${mobile ? "flex" : "hidden md:flex"}
     `}
   >
-    <p className="text-[10px] md:text-xs uppercase tracking-wide font-semibold text-gray-600">
+    <p className="text-[9px] md:text-xs uppercase tracking-wide font-semibold text-gray-600">
       {title}
     </p>
-    <p className="text-3xl md:text-4xl font-extrabold text-[#0A0F1C] mt-1">
+    <p className="text-2xl md:text-4xl font-extrabold text-[#0A0F1C] mt-1">
       {value}
     </p>
   </div>
@@ -64,7 +66,7 @@ const TokenCard: React.FC<{ token: Token; position: number; isServing?: boolean 
   );
 };
 
-const CurrentServiceCard: React.FC<{ token: Token; isLoading?: boolean }> =
+const CurrentServiceCard: React.FC<{ token: Token }> =
 ({ token }) => (
   <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary-dark via-primary to-primary-light text-white shadow-2xl w-full p-7">
     <div className="relative z-10 space-y-4">
@@ -81,7 +83,7 @@ const CurrentServiceCard: React.FC<{ token: Token; isLoading?: boolean }> =
 );
 
 /* ============================================================
-   MAIN STAFF DASHBOARD COMPONENT
+   MAIN STAFF DASHBOARD
 ============================================================ */
 
 const StaffDashboard: React.FC = () => {
@@ -97,93 +99,136 @@ const StaffDashboard: React.FC = () => {
     [offices, currentUser]
   );
 
-  const [selectedOfficeId, setSelectedOfficeId] = useState<string | null>(
-    staffOffices[0]?.id || null
-  );
+  const [selectedOfficeId, setSelectedOfficeId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!selectedOfficeId && staffOffices.length > 0) {
+      setSelectedOfficeId(staffOffices[0].id);
+    }
+  }, [staffOffices, selectedOfficeId]);
 
   const officeTokens = useMemo(
     () => tokens.filter((t) => t.officeId === selectedOfficeId),
     [tokens, selectedOfficeId]
   );
 
-  const waitingTokens = officeTokens.filter((t) => t.status === TokenStatus.WAITING);
+  const waitingTokens = officeTokens
+    .filter((t) => t.status === TokenStatus.WAITING)
+    .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
+
   const inProgressToken = officeTokens.find((t) => t.status === TokenStatus.IN_PROGRESS);
   const completedCount = officeTokens.filter((t) => t.status === TokenStatus.COMPLETED).length;
 
-  const [calling, setCalling] = useState(false);
-  const [callError, setCallError] = useState("");
+  /* BUTTON STATES */
+  const [buttonState, setButtonState] = useState<"idle" | "calling" | "arrived">("idle");
+  const [lastCalledId, setLastCalledId] = useState<string | null>(null);
+
+  /* ----------------------------------------------------
+        BUTTON LOGIC  
+     ---------------------------------------------------- */
 
   const handleCallNext = async () => {
-    if (calling) return;
-    setCalling(true);
-    setCallError("");
+    if (buttonState === "calling") return;
+
+    // If someone is being served → COMPLETE THEM
+    if (inProgressToken) {
+      setButtonState("calling");
+      await completeToken(inProgressToken.id);
+      setTimeout(() => setButtonState("idle"), 400);
+      return;
+    }
+
+    // If no one waiting → do nothing
+    if (!waitingTokens.length) return;
+
+    const next = waitingTokens[0];
+    setLastCalledId(next.id);
+
+    setButtonState("calling");
 
     try {
       await callNextToken(selectedOfficeId!);
-    } catch (err: any) {
-      setCallError(err.message || "Failed to call next student");
+    } catch (e) {
+      console.error(e);
     }
-
-    setCalling(false);
   };
 
+  /* ----------------------------------------------------
+        DETECT ARRIVAL AFTER QR SCAN
+     ---------------------------------------------------- */
+  useEffect(() => {
+    if (!inProgressToken) return;
+
+    if (inProgressToken.id === lastCalledId) {
+      setButtonState("arrived");
+
+      const timer = setTimeout(() => {
+        setButtonState("idle");
+      }, 3000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [inProgressToken, lastCalledId]);
+
   /* ============================================================
-     RETURN — MOBILE + DESKTOP VIEW
+         RETURN (MOBILE + DESKTOP)
   ============================================================ */
 
   return (
     <div className="h-screen flex flex-col overflow-hidden">
 
       {/* --------------------------------------------------------
-         📱 MOBILE VIEW (ONLY MOBILE)
+         📱 MOBILE VIEW
       -------------------------------------------------------- */}
       <div className="block md:hidden relative pb-24">
 
-        {/* MOBILE STATS (unchanged) */}
-        <div className="w-full flex justify-center mb-6">
-          <div className="w-full max-w-md mx-auto flex justify-between px-3 gap-3">
-            <StatCard title="Students Waiting" value={waitingTokens.length} color="from-yellow-50 to-yellow-100" />
-            <StatCard title="Completed Today" value={completedCount} color="from-green-50 to-green-100" />
+        {/* FIXED MOBILE STATS */}
+        <div className="fixed top-[60px] left-0 right-0 z-20 bg-[#F6F7FB] pt-3 pb-4 shadow-sm">
+          <div className="w-full flex justify-center">
+            <div className="w-80 max-w-md mx-auto flex justify-between px-3 gap-5">
+              <StatCard title="Students Waiting" value={waitingTokens.length} color="from-yellow-50 to-yellow-100" />
+              <StatCard title="Completed Today" value={completedCount} color="from-green-50 to-green-100" />
+            </div>
           </div>
         </div>
 
-        {/* WAITING LIST — FULL SCREEN WIDTH */}
-        <div className="px-3 space-y-3">
+        {/* WAITING LIST */}
+        <div className="px-3 space-y-3 mt-[150px]">
           {waitingTokens.length > 0 ? (
             waitingTokens.map((token, index) => (
               <TokenCard key={token.id} token={token} position={index + 1} />
             ))
           ) : (
-            <p className="text-center text-neutral-500 pt-4">
-              No students are currently waiting.
-            </p>
+            <p className="text-center text-neutral-500 pt-4">No students are currently waiting.</p>
           )}
         </div>
 
-        {/* FLOATING CALL NEXT BUTTON */}
+        {/* FLOATING BUTTON (unchanged position) */}
         <button
           onClick={handleCallNext}
-          disabled={calling || waitingTokens.length === 0}
+          disabled={buttonState === "calling"}
           className="
-            fixed bottom-4 left-1/2 -translate-x-1/2 
-            w-[90%] max-w-md 
-            bg-secondary text-primary-dark font-bold 
+            fixed bottom-4 left-1/2 -translate-x-1/2
+            w-[90%] max-w-md
+            bg-secondary text-primary-dark font-bold
             py-3 rounded-2xl shadow-xl
+            transition-all duration-300
             disabled:bg-neutral-300
           "
         >
-          {calling ? "Calling..." : "Call Next Student"}
+          {buttonState === "idle" && (inProgressToken ? "Complete" : "Call Next Student")}
+          {buttonState === "calling" && "Calling..."}
+          {buttonState === "arrived" && "Arrived"}
         </button>
-
       </div>
 
       {/* --------------------------------------------------------
-         💻 DESKTOP VIEW — EXACT SAME AS BEFORE
+         💻 DESKTOP VIEW (keep layout exactly same)
       -------------------------------------------------------- */}
       <div className="hidden md:block h-full overflow-hidden">
 
-        {/* HEADER (unchanged) */}
-        <div className="flex flex-col md:flex-row justify-between items-center mb-2 px-6 pt-0">
+        {/* HEADER */}
+        <div className="flex flex-col md:flex-row justify-between md:items-center mb-2 px-6 pt-0 text-center md:text-left">
           {staffOffices.length > 1 && (
             <select
               value={selectedOfficeId || ""}
@@ -209,7 +254,7 @@ const StaffDashboard: React.FC = () => {
         {/* MAIN GRID */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 px-6 pb-6 h-full overflow-hidden">
 
-          {/* WAITING LIST CONTAINER */}
+          {/* WAITING LIST */}
           <div className="lg:col-span-2 bg-white p-6 rounded-2xl shadow-xl h-full flex flex-col">
             <h3 className="text-xl font-bold mb-4">Waiting List</h3>
 
@@ -219,9 +264,7 @@ const StaffDashboard: React.FC = () => {
                   <TokenCard key={token.id} token={token} position={index + 1} />
                 ))
               ) : (
-                <p className="text-center text-neutral-500 pt-10">
-                  No students are currently waiting.
-                </p>
+                <p className="text-center text-neutral-500 pt-10">No students are currently waiting.</p>
               )}
             </div>
           </div>
@@ -231,18 +274,38 @@ const StaffDashboard: React.FC = () => {
             {!inProgressToken ? (
               <div className="flex flex-col items-center justify-center h-full">
                 <p className="text-neutral-600 mb-4">No one is currently being served.</p>
-                <button className="w-full bg-secondary text-primary-dark py-3 rounded-lg">
-                  Call Next Student
+
+                {/* SAME BUTTON POSITION AS YOUR CURRENT UI */}
+                <button
+                  onClick={handleCallNext}
+                  disabled={buttonState === "calling"}
+                  className="w-full bg-secondary text-primary-dark py-3 rounded-lg font-bold disabled:bg-neutral-300 transition-all"
+                >
+                  {buttonState === "idle" && "Call Next Student"}
+                  {buttonState === "calling" && "Calling..."}
+                  {buttonState === "arrived" && "Arrived"}
                 </button>
               </div>
             ) : (
-              <CurrentServiceCard token={inProgressToken} />
+              <>
+                <CurrentServiceCard token={inProgressToken} />
+
+                {/* BUTTON UNDER CURRENT-SERVING CARD */}
+                <button
+                  onClick={handleCallNext}
+                  disabled={buttonState === "calling"}
+                  className="w-full bg-secondary text-primary-dark py-3 rounded-lg font-bold mt-6 disabled:bg-neutral-300 transition-all"
+                >
+                  {buttonState === "idle" && "Complete"}
+                  {buttonState === "calling" && "Calling..."}
+                  {buttonState === "arrived" && "Arrived"}
+                </button>
+              </>
             )}
           </div>
 
         </div>
       </div>
-
     </div>
   );
 };

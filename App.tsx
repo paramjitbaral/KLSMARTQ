@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { HashRouter, Route, Routes, Navigate } from 'react-router-dom';
 import { useAppContext } from './context/AppContext';
 import { Role } from './types';
@@ -21,41 +21,131 @@ import OfficeManagementPage from './components/admin/OfficeManagementPage';
 import UserManagementPage from './components/admin/UserManagementPage';
 
 const App: React.FC = () => {
-  const { currentUser, loading, session, error } = useAppContext();
+  const { currentUser, loading, session, error, refreshTokens } = useAppContext();
 
-  // Render a full-page loading indicator while the initial session and data are being fetched.
-  // This is a crucial fix to prevent race conditions and ensure all necessary data is loaded
-  // before any components attempt to render.
+  /* ------------------------------------------------------------------
+     GLOBAL PULL-TO-REFRESH (ANIMATED)
+  ------------------------------------------------------------------ */
+  useEffect(() => {
+    let startY = 0;
+    let pulling = false;
+    const threshold = 80;
+    const indicator = document.getElementById("ptr-indicator");
+
+    const onStart = (e: TouchEvent) => {
+      if (window.scrollY === 0) {
+        pulling = true;
+        startY = e.touches[0].clientY;
+      }
+    };
+
+    const onMove = (e: TouchEvent) => {
+      if (!pulling || !indicator) return;
+
+      const diff = e.touches[0].clientY - startY;
+
+      // Stretch animation while pulling
+      if (diff > 0 && diff < threshold) {
+        indicator.style.opacity = "1";
+        indicator.style.transform = `translateY(${diff / 2}px)`;
+      }
+
+      // Trigger refresh when threshold crossed
+      if (diff > threshold) {
+        pulling = false;
+        indicator.style.transform = "translateY(60px)";
+        indicator.style.opacity = "1";
+
+        refreshTokens().then(() => {
+          setTimeout(() => {
+            indicator.style.opacity = "0";
+            indicator.style.transform = "translateY(0px)";
+          }, 500);
+        });
+      }
+    };
+
+    const onEnd = () => {
+      pulling = false;
+      if (indicator) {
+        indicator.style.opacity = "0";
+        indicator.style.transform = "translateY(0px)";
+      }
+    };
+
+    document.addEventListener("touchstart", onStart);
+    document.addEventListener("touchmove", onMove);
+    document.addEventListener("touchend", onEnd);
+
+    return () => {
+      document.removeEventListener("touchstart", onStart);
+      document.removeEventListener("touchmove", onMove);
+      document.removeEventListener("touchend", onEnd);
+    };
+  }, [refreshTokens]);
+
+  /* ------------------------------------------------------------------
+     INITIAL LOADING & AUTH HANDLING — UNTOUCHED
+  ------------------------------------------------------------------ */
+
   if (loading) {
     return (
-        <div className="flex items-center justify-center h-screen bg-neutral-100">
-            <div className="w-16 h-16 border-8 border-dashed rounded-full animate-spin border-primary-dark" role="status" aria-label="Loading application"></div>
-        </div>
+      <div className="flex items-center justify-center h-screen bg-neutral-100">
+        <div
+          className="w-16 h-16 border-8 border-dashed rounded-full animate-spin border-primary-dark"
+          role="status"
+          aria-label="Loading application"
+        ></div>
+      </div>
     );
   }
 
-  // Global error boundary for startup failures (e.g., loading timeout, RLS issues)
   if (error && !currentUser) {
     return (
-        <div className="flex flex-col items-center justify-center h-screen bg-red-50 text-red-900 p-4">
-            <div className="text-center max-w-xl bg-white p-8 rounded-lg shadow-lg border border-red-200">
-                <h1 className="text-3xl font-bold text-red-700 mb-4">Application Error</h1>
-                <p className="text-neutral-700 mb-6">{error}</p>
-                <button
-                    onClick={() => window.location.reload()}
-                    className="px-8 py-3 bg-red-600 text-white font-bold rounded-lg hover:bg-red-700 transition-colors"
-                >
-                    Refresh Page
-                </button>
-            </div>
+      <div className="flex flex-col items-center justify-center h-screen bg-red-50 text-red-900 p-4">
+        <div className="text-center max-w-xl bg-white p-8 rounded-lg shadow-lg border border-red-200">
+          <h1 className="text-3xl font-bold text-red-700 mb-4">
+            Application Error
+          </h1>
+          <p className="text-neutral-700 mb-6">{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="px-8 py-3 bg-red-600 text-white font-bold rounded-lg hover:bg-red-700 transition-colors"
+          >
+            Refresh Page
+          </button>
         </div>
+      </div>
     );
   }
 
   if (!session || !currentUser) {
-    return <StudentAuthPage />;
+    return (
+      <>
+        {/* Pull-to-Refresh Indicator */}
+        <div
+          id="ptr-indicator"
+          className="
+          fixed top-0 left-0 right-0 z-[9999]
+          flex flex-col items-center justify-center
+          pointer-events-none opacity-0
+          transition-all duration-300
+        "
+        >
+          <div className="bg-white shadow-md rounded-b-2xl px-4 py-2 flex items-center gap-2">
+            <div className="h-4 w-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+            <span className="text-sm font-medium text-gray-700">Refreshing…</span>
+          </div>
+        </div>
+
+        <StudentAuthPage />
+      </>
+    );
   }
 
+  /* ------------------------------------------------------------------
+     ROLE-BASED ROUTES — UNTOUCHED
+  ------------------------------------------------------------------ */
   const renderRoutes = () => {
     switch (currentUser.role) {
       case Role.STUDENT:
@@ -67,6 +157,7 @@ const App: React.FC = () => {
             <Route path="*" element={<Navigate to="/dashboard" />} />
           </Routes>
         );
+
       case Role.STAFF:
         return (
           <Routes>
@@ -74,6 +165,7 @@ const App: React.FC = () => {
             <Route path="*" element={<Navigate to="/dashboard" />} />
           </Routes>
         );
+
       case Role.ADMIN:
         return (
           <Routes>
@@ -84,8 +176,8 @@ const App: React.FC = () => {
             <Route path="*" element={<Navigate to="/dashboard" />} />
           </Routes>
         );
+
       default:
-        // This case should ideally not be hit if loading is handled correctly, but serves as a fallback.
         return (
           <div className="flex items-center justify-center h-full">
             <p>Verifying user role...</p>
@@ -96,9 +188,23 @@ const App: React.FC = () => {
 
   return (
     <HashRouter>
-      <MainLayout>
-        {renderRoutes()}
-      </MainLayout>
+      {/* GLOBAL pull-to-refresh indicator */}
+      <div
+        id="ptr-indicator"
+        className="
+          fixed top-0 left-0 right-0 z-[9999]
+          flex flex-col items-center justify-center
+          pointer-events-none opacity-0
+          transition-all duration-300
+        "
+      >
+        <div className="bg-white shadow-md rounded-b-2xl px-4 py-2 flex items-center gap-2">
+          <div className="h-4 w-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+          <span className="text-sm font-medium text-gray-700">Refreshing…</span>
+        </div>
+      </div>
+
+      <MainLayout>{renderRoutes()}</MainLayout>
     </HashRouter>
   );
 };

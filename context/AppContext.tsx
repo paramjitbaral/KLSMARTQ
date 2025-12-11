@@ -20,7 +20,68 @@ import {
   Priority,
   TokenStatus
 } from "../types";
+/* -------------------------------------------------------
+   GLOBAL PULL-TO-REFRESH WITH ANIMATION
+------------------------------------------------------- */
+const useGlobalPullToRefresh = (refreshFn: () => Promise<void>) => {
+  useEffect(() => {
+    let startY = 0;
+    let pulling = false;
+    let threshold = 80;
+    let indicator = document.getElementById("ptr-indicator");
 
+    const onStart = (e: TouchEvent) => {
+      if (window.scrollY === 0) {
+        startY = e.touches[0].clientY;
+        pulling = true;
+      }
+    };
+
+    const onMove = (e: TouchEvent) => {
+      if (!pulling || !indicator) return;
+
+      const diff = e.touches[0].clientY - startY;
+
+      if (diff > 0 && diff < threshold) {
+        indicator.style.opacity = "1";
+        indicator.style.transform = `translateY(${diff / 2}px)`;
+      }
+
+      if (diff > threshold) {
+        pulling = false;
+
+        indicator.style.transform = `translateY(60px)`;
+        indicator.style.opacity = "1";
+
+        refreshFn().then(() => {
+          setTimeout(() => {
+            if (!indicator) return;
+            indicator.style.opacity = "0";
+            indicator.style.transform = "translateY(0px)";
+          }, 500);
+        });
+      }
+    };
+
+    const onEnd = () => {
+      pulling = false;
+      if (indicator) {
+        indicator.style.opacity = "0";
+        indicator.style.transform = "translateY(0px)";
+      }
+    };
+
+    document.addEventListener("touchstart", onStart);
+    document.addEventListener("touchmove", onMove);
+    document.addEventListener("touchend", onEnd);
+
+    return () => {
+      document.removeEventListener("touchstart", onStart);
+      document.removeEventListener("touchmove", onMove);
+      document.removeEventListener("touchend", onEnd);
+    };
+  }, [refreshFn]);
+};
 // -------------------------------------------------------
 // SUPABASE CLIENT
 // -------------------------------------------------------
@@ -979,6 +1040,13 @@ const value = useMemo(
     isQueueEmpty
   ]
 );
+/* -------------------------------------------------------
+   ENABLE GLOBAL PULL-TO-REFRESH
+------------------------------------------------------- */
+useGlobalPullToRefresh(async () => {
+  console.log("🔄 Pull-to-refresh triggered");
+  await refreshTokens();
+});
 
 // -------------------------------------------------------
 // PROVIDER EXPORT
