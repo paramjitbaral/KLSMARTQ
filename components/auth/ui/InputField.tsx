@@ -18,7 +18,7 @@ const InputField = React.forwardRef<HTMLInputElement, Props>(
         {label && (
           <label
             htmlFor={id}
-            className="block mb-2 text-xs font-semibold tracking-widest text-slate-400 uppercase"
+            className="block mb-2 text-xs font-semibold tracking-widest text-slate-500 uppercase"
           >
             {label}
           </label>
@@ -34,10 +34,10 @@ const InputField = React.forwardRef<HTMLInputElement, Props>(
           placeholder={placeholder}
           autoComplete={autoComplete}
           className="
-            w-full px-4 py-3 rounded-xl bg-white/[0.05] text-white
-            placeholder-slate-600 border border-white/10
-            focus:border-emerald-400/40 focus:bg-white/[0.07]
-            transition-all duration-150 outline-none text-sm font-mono
+            w-full px-4 py-3 rounded-xl bg-white text-slate-900 shadow-[0_2px_10px_rgb(0,0,0,0.04)]
+            placeholder-slate-400 border border-slate-200 hover:border-slate-300
+            focus:border-emerald-500/50 focus:ring-4 focus:ring-emerald-500/10
+            transition-all duration-200 outline-none text-sm font-mono
           "
         />
       </div>

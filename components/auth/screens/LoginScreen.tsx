@@ -27,12 +27,12 @@ const LoginScreen = ({
 }: Props) => (
   <div className="w-full h-full flex flex-col justify-center animate-fadeIn">
     <div className="mb-10">
-      <div className="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center mb-6 border border-white/5">
-        <LogoIcon className="w-6 h-6 text-emerald-400" />
+      <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center mb-6 border border-slate-200/60 shadow-[0_2px_10px_rgb(0,0,0,0.04)]">
+        <LogoIcon className="w-6 h-6 text-emerald-500" />
       </div>
 
-      <h2 className="text-3xl font-bold text-white">Welcome Back</h2>
-      <p className="text-slate-400 mt-2 text-sm">Enter your credentials to continue.</p>
+      <h2 className="text-[32px] font-extrabold text-slate-900 tracking-tight">Welcome Back</h2>
+      <p className="text-slate-500 mt-2 text-[15px]">Enter your credentials to continue.</p>
     </div>
 
     <form onSubmit={onSubmit} className="space-y-6">
@@ -55,9 +55,9 @@ const LoginScreen = ({
         label="Password"
       />
 
-      <div className="flex justify-between text-xs text-slate-400">
+      <div className="flex justify-between text-xs text-slate-500">
         <label className="flex items-center gap-2 cursor-pointer">
-          <input type="checkbox" className="w-3.5 h-3.5 rounded bg-white/10 border-white/20" />
+          <input type="checkbox" className="w-3.5 h-3.5 rounded bg-white border-slate-300" />
           Keep me logged in
         </label>
 
@@ -71,10 +71,10 @@ const LoginScreen = ({
       </AuthButton>
     </form>
 
-    <div className="mt-8 text-center pt-6 border-t border-white/5">
-      <p className="text-slate-400 text-sm">
+    <div className="mt-8 text-center pt-6 border-t border-slate-200">
+      <p className="text-slate-500 text-sm">
         New student?
-        <button onClick={goSignup} className="text-white ml-1 font-semibold hover:text-emerald-400">
+        <button onClick={goSignup} className="text-slate-900 ml-1 font-semibold hover:text-emerald-500">
           Register
         </button>
       </p>

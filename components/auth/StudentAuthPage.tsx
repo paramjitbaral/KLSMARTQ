@@ -150,15 +150,15 @@ const StudentAuthPage = () => {
 
   return (
     <div
-      className="w-full h-screen bg-slate-950 flex overflow-hidden relative selection:bg-emerald-500/30 selection:text-white"
+      className="w-full h-screen bg-slate-50 flex overflow-hidden relative selection:bg-emerald-500/30 selection:text-slate-900"
       style={{ fontFamily: "'Space Grotesk', sans-serif" }}
     >
       {/* LEFT — HOLOGRAPHIC ONBOARDING */}
       <div
         className={`
-          absolute inset-0 z-20 bg-slate-950
+          absolute inset-0 z-20 bg-slate-950 bg-gradient-to-br from-slate-900 to-slate-950
           transition-transform duration-700 ease-out
-          lg:static lg:w-1/2 lg:border-r border-white/5
+          lg:static lg:w-1/2 lg:border-r border-black/5
           ${showOnboarding ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
         `}
       >
@@ -168,7 +168,7 @@ const StudentAuthPage = () => {
       {/* RIGHT — AUTH */}
       <div
         className={`
-          absolute inset-0 flex flex-col items-center justify-center px-6 bg-slate-950
+          absolute inset-0 flex flex-col items-center justify-center px-6 bg-slate-50 bg-gradient-to-tl from-slate-50 to-white
           transition-transform duration-700 ease-in-out
           lg:relative lg:w-1/2
           ${showOnboarding ? "translate-x-full lg:translate-x-0" : "translate-x-0"}
@@ -176,10 +176,10 @@ const StudentAuthPage = () => {
       >
         {/* Grid background */}
         <div
-          className="absolute inset-0 opacity-10 pointer-events-none"
+          className="absolute inset-0 pointer-events-none"
           style={{
             backgroundImage:
-              "radial-gradient(circle at 2px 2px, rgba(255,255,255,0.15) 1px, transparent 0)",
+              "radial-gradient(circle at 1px 1px, rgba(148, 163, 184, 0.15) 1px, transparent 0)",
             backgroundSize: "40px 40px",
           }}
         />

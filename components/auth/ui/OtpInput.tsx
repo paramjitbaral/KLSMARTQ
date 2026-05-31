@@ -34,10 +34,10 @@ const OtpInput = ({ value, onChange }: Props) => {
           }}
           className="
             w-10 h-14 text-center font-bold text-xl
-            bg-white/[0.05] text-white rounded-lg
-            border border-white/10
-            focus:border-emerald-400/40 focus:bg-white/[0.07]
-            transition-all duration-150 font-mono
+            bg-white text-slate-900 rounded-xl shadow-[0_2px_10px_rgb(0,0,0,0.04)]
+            border border-slate-200 hover:border-slate-300
+            focus:border-emerald-500/50 focus:ring-4 focus:ring-emerald-500/10
+            transition-all duration-200 font-mono
           "
         />
       ))}

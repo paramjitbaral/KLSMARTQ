@@ -5,7 +5,7 @@ import { User, Role } from '../../types';
 import { EditIcon, TrashIcon } from '../common/Icons';
 
 // FIX: Update onSave prop to correctly handle the password field for new users.
-const UserForm: React.FC<{ user?: User; onSave: (user: (Omit<User, 'id'> & { password?: string }) | User) => Promise<void>; onCancel: () => void }> = ({ user, onSave, onCancel }) => {
+const UserForm: React.FC<{ user?: User; onSave: (user: (Omit<User, 'id'> & { password?: string }) | User) => Promise<void>; onCancel: () => void; onDelete?: () => void }> = ({ user, onSave, onCancel, onDelete }) => {
     const { offices } = useAppContext();
     const [formData, setFormData] = useState({
         name: user?.name || '',
@@ -54,10 +54,7 @@ const UserForm: React.FC<{ user?: User; onSave: (user: (Omit<User, 'id'> & { pas
             ? { ...user, ...formData }
             : { ...formData, password };
         
-        // If the role is not Staff, ensure assignedOfficeIds is an empty array to maintain data integrity.
-        if (dataToSave.role !== Role.STAFF) {
-            dataToSave.assignedOfficeIds = [];
-        }
+        // Removed role restriction so Admins can also be assigned offices
         
         setIsSaving(true);
         try {
@@ -113,7 +110,7 @@ const UserForm: React.FC<{ user?: User; onSave: (user: (Omit<User, 'id'> & { pas
                         <option value={Role.STUDENT}>Student</option>
                     </select>
                     
-                    {formData.role === Role.STAFF && (
+                    {(formData.role === Role.STAFF || formData.role === Role.ADMIN) && (
                         <div className="relative" ref={dropdownRef}>
                             <label className="block text-sm font-medium text-neutral-700 mb-1">Assigned Offices</label>
                             <div className="relative">
@@ -166,11 +163,16 @@ const UserForm: React.FC<{ user?: User; onSave: (user: (Omit<User, 'id'> & { pas
 
                     {error && <p className="text-sm text-red-500 text-center">{error}</p>}
 
-                    <div className="flex justify-end space-x-4 pt-4">
-                        <button type="button" onClick={onCancel} className="px-6 py-2 bg-neutral-200 text-neutral-800 font-semibold rounded-lg hover:bg-neutral-300 transition-colors">Cancel</button>
-                        <button type="submit" disabled={isSaving} className="px-6 py-2 bg-primary text-white font-semibold rounded-lg hover:bg-primary-light transition-colors disabled:bg-neutral-400">
-                            {isSaving ? 'Saving...' : 'Save'}
-                        </button>
+                    <div className="flex justify-between items-center pt-4">
+                        {user && onDelete ? (
+                            <button type="button" onClick={onDelete} className="px-4 py-2 bg-red-100 text-red-600 font-semibold rounded-lg hover:bg-red-200 transition-colors">Delete</button>
+                        ) : <div></div>}
+                        <div className="flex space-x-4">
+                            <button type="button" onClick={onCancel} className="px-6 py-2 bg-neutral-200 text-neutral-800 font-semibold rounded-lg hover:bg-neutral-300 transition-colors">Cancel</button>
+                            <button type="submit" disabled={isSaving} className="px-6 py-2 bg-primary text-white font-semibold rounded-lg hover:bg-primary-light transition-colors disabled:bg-neutral-400">
+                                {isSaving ? 'Saving...' : 'Save'}
+                            </button>
+                        </div>
                     </div>
                  </form>
             </div>
@@ -383,7 +385,7 @@ const UserManagementPage: React.FC = () => {
           </tbody>
         </table>
       </div>
-       {isModalOpen && <UserForm user={editingUser} onSave={handleSave} onCancel={() => setIsModalOpen(false)} />}
+       {isModalOpen && <UserForm user={editingUser} onSave={handleSave} onCancel={() => setIsModalOpen(false)} onDelete={editingUser ? () => { setIsModalOpen(false); setUserToDelete(editingUser); } : undefined} />}
        {userToDelete && (
             <ConfirmationModal
                 title="Confirm Deletion"

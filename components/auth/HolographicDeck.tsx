@@ -11,24 +11,36 @@ const HolographicDeck = ({ onComplete }: { onComplete: () => void }) => {
   /* ---------------------------------------------------------
         INIT 9 CARDS (cinematic layout, reduced lag)
   ---------------------------------------------------------- */
+  const generateRandomPos = () => ({
+    x: (Math.random() - 0.5) * window.innerWidth * 0.5,
+    y: (Math.random() - 0.5) * window.innerHeight * 0.5,
+    z: (Math.random() - 0.5) * 500,
+    rX: (Math.random() - 0.5) * 60,
+    rY: (Math.random() - 0.5) * 60,
+    rZ: (Math.random() - 0.5) * 180,
+  });
+
   useEffect(() => {
-  const isMobile = window.innerWidth < 768; // mobile breakpoint
-  const count = isMobile ? 6 : 9; // 6 cards on mobile, 9 on desktop
+    const isMobile = window.innerWidth < 768; // mobile breakpoint
+    const count = isMobile ? 6 : 9; // 6 cards on mobile, 9 on desktop
 
-  const arr = Array.from({ length: count }).map((_, i) => ({
-    id: i,
-    initialPos: {
-      x: (Math.random() - 0.5) * window.innerWidth * 0.45,
-      y: (Math.random() - 0.5) * window.innerHeight * 0.45,
-      z: (Math.random() - 0.5) * 500,
-      rX: (Math.random() - 0.5) * 180,
-      rY: (Math.random() - 0.5) * 180,
-      rZ: (Math.random() - 0.5) * 180,
-    },
-  }));
+    const arr = Array.from({ length: count }).map((_, i) => ({
+      id: i,
+      initialPos: generateRandomPos(),
+    }));
 
-  setTickets(arr);
-}, []);
+    setTickets(arr);
+  }, []);
+
+  // Reshuffle tickets every time we enter phase 0
+  useEffect(() => {
+    if (phase === 0) {
+      setTickets((prev) => prev.map((ticket) => ({
+        ...ticket,
+        initialPos: generateRandomPos()
+      })));
+    }
+  }, [phase]);
 
 
   /* ---------------------------------------------------------
@@ -89,23 +101,15 @@ const HolographicDeck = ({ onComplete }: { onComplete: () => void }) => {
         RENDER UI
   ---------------------------------------------------------- */
   return (
-    <div className="relative w-full h-full overflow-hidden flex flex-col text-white select-none">
+    <div className="relative w-full h-full overflow-hidden flex flex-col text-white select-none bg-slate-950 bg-gradient-to-br from-slate-900 to-slate-950">
 
-      {/* BACKGROUND WORD */}
-      <div className="absolute inset-0 pointer-events-none flex items-center justify-center opacity-10">
-        <h1
-            className={`
-            font-bold leading-none tracking-tight
-            transition-all duration-[1600ms]
-            text-[40vw] md:text-[20vw]
-       `}
-  style={{
-    transform: phase === 1 ? "scale(0.88)" : "scale(1)",
-  }}
->
-
-          {phase === 0 ? "CHAOS" : phase === 1 ? "ORDER" : "FLOW"}
-        </h1>
+      {/* BACKGROUND IMAGE BLENDED INTO DARK THEME */}
+      <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden bg-slate-950">
+        <img 
+          src="/tech-flow-bg.png" 
+          alt="Abstract Tech Flow Background" 
+          className="absolute inset-0 w-full h-full object-cover opacity-[0.35]" 
+        />
       </div>
 
       {/* 3D SCENE */}
@@ -116,20 +120,7 @@ const HolographicDeck = ({ onComplete }: { onComplete: () => void }) => {
           transformStyle: "preserve-3d",
         }}
       >
-        {/* LASER LINE */}
-        <div
-          className={`
-            absolute top-0 left-1/2 w-1 bg-emerald-500/50
-            shadow-[0_0_50px_3px_rgba(16,185,129,0.6)]
-            transition-all duration-500 z-0
-            ${phase === 2 ? "opacity-100 animate-pulse" : "opacity-0"}
-          `}
-          style={{
-            transform: "translateX(-50%) rotate(-45deg)",
-            height: "160vh",
-            top: "-25vh",
-          }}
-        />
+        {/* LASER LINE REMOVED */}
 
         {/* CARDS */}
         {tickets.map((t, i) => (
@@ -143,18 +134,14 @@ const HolographicDeck = ({ onComplete }: { onComplete: () => void }) => {
         ))}
       </div>
 
+      {/* ATMOSPHERIC OVERLAYS FOR BLENDING */}
+      <div className="absolute inset-0 pointer-events-none z-[15] bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent" />
+      <div className="absolute inset-0 pointer-events-none z-[15] bg-[radial-gradient(circle_at_center,_transparent_0%,_rgba(2,6,23,0.8)_100%)]" />
+
       {/* TEXT + BUTTON */}
       <div className="relative z-20 w-full p-8 md:p-12 flex flex-col gap-6 pb-16 md:pb-12 items-center md:items-start">
         <div className="text-center md:text-left">
-          <div
-            className={`
-              text-xs font-mono tracking-[0.3em] mb-2
-              transition-colors duration-500
-              ${content[phase].accent}
-            `}
-          >
-            0{phase + 1} // {content[phase].kicker}
-          </div>
+          {/* Removed kicker text */}
 
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-2">
             {content[phase].title}
@@ -170,15 +157,15 @@ const HolographicDeck = ({ onComplete }: { onComplete: () => void }) => {
           onClick={handleNext}
           className="
             group relative w-full md:w-auto px-8 h-14
-            bg-white text-slate-900 font-bold rounded-lg
-            overflow-hidden transition-all hover:scale-[1.03] active:scale-[0.97]
+            bg-emerald-500 text-slate-950 font-bold rounded-xl
+            overflow-hidden transition-all hover:shadow-[0_8px_30px_rgba(16,185,129,0.2)] hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98]
           "
         >
           <span className="relative z-10">{content[phase].button}</span>
 
           {/* hover sweep */}
           <div className="
-            absolute inset-0 bg-emerald-500/15 
+            absolute inset-0 bg-white/20 
             scale-x-0 group-hover:scale-x-100
             origin-left transition-transform duration-300
           " />
@@ -191,7 +178,7 @@ const HolographicDeck = ({ onComplete }: { onComplete: () => void }) => {
               key={i}
               className={`
                 h-1 rounded-full transition-all duration-700
-                ${phase === i ? "w-10 bg-white" : "w-3 bg-white/20"}
+                ${phase === i ? "w-10 bg-emerald-500" : "w-3 bg-slate-700"}
               `}
             />
           ))}

@@ -19,8 +19,8 @@ const ForgotPasswordScreen = ({
 }: Props) => (
   <div className="w-full h-full flex flex-col justify-center animate-fadeIn">
     <div className="mb-10">
-      <h2 className="text-3xl font-bold text-white">Reset Password</h2>
-      <p className="text-slate-400 mt-2 text-sm">
+      <h2 className="text-3xl font-bold text-slate-900">Reset Password</h2>
+      <p className="text-slate-500 mt-2 text-sm">
         A reset link will be emailed to you.
       </p>
     </div>
@@ -43,7 +43,7 @@ const ForgotPasswordScreen = ({
       <button
         type="button"
         onClick={onBackToLogin}
-        className="w-full text-center text-slate-500 hover:text-white text-sm"
+        className="w-full text-center text-slate-500 hover:text-slate-900 text-sm"
       >
         Back to Login
       </button>

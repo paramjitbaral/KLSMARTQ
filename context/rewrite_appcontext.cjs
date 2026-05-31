@@ -1,4 +1,6 @@
-import React, { createContext, useState, useContext, ReactNode, useMemo, useEffect, useRef, useCallback } from "react";
+const fs = require('fs');
+
+const content = `import React, { createContext, useState, useContext, ReactNode, useMemo, useEffect, useRef, useCallback } from "react";
 import axios from "axios";
 import { io } from "socket.io-client";
 import { User, Office, Token, Role, Priority, TokenStatus } from "../types";
@@ -22,11 +24,11 @@ const useGlobalPullToRefresh = (refreshFn: () => Promise<void>) => {
       const diff = e.touches[0].clientY - startY;
       if (diff > 0 && diff < threshold) {
         indicator.style.opacity = "1";
-        indicator.style.transform = `translateY(${diff / 2}px)`;
+        indicator.style.transform = \`translateY(\${diff / 2}px)\`;
       }
       if (diff > threshold) {
         pulling = false;
-        indicator.style.transform = `translateY(60px)`;
+        indicator.style.transform = \`translateY(60px)\`;
         indicator.style.opacity = "1";
         refreshFn().then(() => {
           setTimeout(() => {
@@ -66,7 +68,7 @@ const api = axios.create({ baseURL: API_URL });
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem("kl_smartq_jwt");
   if (token && config.headers) {
-    config.headers.Authorization = `Bearer ${token}`;
+    config.headers.Authorization = \`Bearer \${token}\`;
   }
   return config;
 });
@@ -196,7 +198,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         api.get("/offices"),
         api.get("/tokens"),
         api.get("/notifications"),
-        userProfile.role === Role.ADMIN ? api.get("/users") : Promise.resolve({ data: [] })
+        userProfile.role === "ADMIN" ? api.get("/users") : Promise.resolve({ data: [] })
       ]);
 
       setOffices(officesRes.data.map(formatOfficeFromDB));
@@ -255,31 +257,10 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       }
     });
 
-    socket.on("user_created", (u) => setUsers((prev) => [...prev, u]));
-    socket.on("user_updated", (u) => {
-      setUsers((prev) => prev.map(x => x.id === u.id ? u : x));
-      if (currentUserRef.current?.id === u.id) {
-        setCurrentUser(u);
-        currentUserRef.current = u;
-        refreshTokens();
-      }
-    });
-    socket.on("user_deleted", (id) => setUsers((prev) => prev.filter(x => x.id !== id)));
-
-    socket.on("office_created", (o) => setOffices((prev) => [...prev, o]));
-    socket.on("office_updated", (o) => setOffices((prev) => prev.map(x => x.id === o.id ? o : x)));
-    socket.on("office_deleted", (id) => setOffices((prev) => prev.filter(x => x.id !== id)));
-
     return () => {
       socket.off("token_created");
       socket.off("token_updated");
       socket.off("notification_created");
-      socket.off("user_created");
-      socket.off("user_updated");
-      socket.off("user_deleted");
-      socket.off("office_created");
-      socket.off("office_updated");
-      socket.off("office_deleted");
     };
   }, [session, refreshTokens]);
 
@@ -290,11 +271,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       setSession(data.token);
       return { success: true, message: "Logged in successfully" };
     } catch (err: any) {
-      return { 
-        success: false, 
-        message: err.response?.data?.error || err.message,
-        code: err.response?.data?.code
-      };
+      return { success: false, message: err.response?.data?.error || err.message };
     }
   };
 
@@ -367,18 +344,18 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     if (!next) throw new Error("No waiting students");
 
     if (current) {
-      await api.put(`/tokens/${current.id}`, { status: "COMPLETED" });
+      await api.put(\`/tokens/\${current.id}\`, { status: "COMPLETED" });
     }
 
     await api.post("/notifications", { user_id: next.studentId, message: "You're next! Please scan the office QR to start your turn." });
   };
 
   const completeToken = async (tokenId: string) => {
-    await api.put(`/tokens/${tokenId}`, { status: "COMPLETED" });
+    await api.put(\`/tokens/\${tokenId}\`, { status: "COMPLETED" });
   };
 
   const checkInStudent = async (tokenId: string) => {
-    await api.put(`/tokens/${tokenId}`, { is_checked_in: true });
+    await api.put(\`/tokens/\${tokenId}\`, { is_checked_in: true });
   };
 
   const scanOfficeQr = async (studentId: string, officeId: string) => {
@@ -397,7 +374,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       throw new Error("You are not next in queue. Please wait for your turn.");
     }
 
-    await api.put(`/tokens/${nextWaiting.id}`, { status: "IN_PROGRESS", is_checked_in: true });
+    await api.put(\`/tokens/\${nextWaiting.id}\`, { status: "IN_PROGRESS", is_checked_in: true });
 
     // notify next
     const nextAfter = waitingList[1];
@@ -406,24 +383,12 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const addOffice = async (office: any) => {
-    await api.post("/admin/offices", office);
-  };
-  const updateOffice = async (office: Office) => {
-    await api.put(`/admin/offices/${office.id}`, office);
-  };
-  const deleteOffice = async (officeId: string) => {
-    await api.delete(`/admin/offices/${officeId}`);
-  };
-  const addUser = async (user: any) => {
-    await api.post("/admin/users", user);
-  };
-  const updateUser = async (user: User) => {
-    await api.put(`/admin/users/${user.id}`, user);
-  };
-  const deleteUser = async (userId: string) => {
-    await api.delete(`/admin/users/${userId}`);
-  };
+  const addOffice = async (office: any) => {};
+  const updateOffice = async (office: Office) => {};
+  const deleteOffice = async (officeId: string) => {};
+  const addUser = async (user: any) => {};
+  const updateUser = async (user: User) => {};
+  const deleteUser = async (userId: string) => {};
 
   const clearNotification = async (notificationId: number) => {
     setNotifications((prev) => prev.filter((n) => n.id !== notificationId));
@@ -480,3 +445,7 @@ export const useAppContext = () => {
   if (!ctx) throw new Error("useAppContext must be used inside AppProvider");
   return ctx;
 };
+`;
+
+fs.writeFileSync("c:/app/kl-smartq/kl-smartq/context/AppContext.tsx", content);
+console.log("Rewrite completed");

@@ -25,16 +25,16 @@ const AuthButton: React.FC<Props> = ({
       }}
       disabled={disabled || isLoading}
       className="
-        relative w-full py-4 rounded-lg font-semibold
-        bg-white text-slate-900
+        relative w-full py-4 rounded-xl font-semibold
+        bg-slate-900 text-white hover:bg-slate-800
         disabled:opacity-50 disabled:cursor-not-allowed
-        transition-transform duration-150 active:scale-[0.97]
+        transition-all duration-200 hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98]
         overflow-hidden
       "
     >
       <div className="relative z-10 flex items-center justify-center gap-2">
         {isLoading ? (
-          <div className="w-4 h-4 border-2 border-slate-900/30 border-t-slate-900 animate-spin rounded-full"></div>
+          <div className="w-4 h-4 border-2 border-white/30 border-t-white animate-spin rounded-full"></div>
         ) : (
           children
         )}

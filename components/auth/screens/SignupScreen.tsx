@@ -40,8 +40,8 @@ const SignupScreen = ({ email, setEmail, onSubmit, isLoading, goLogin }: Props) 
   return (
     <div className="w-full h-full flex flex-col justify-center animate-fadeIn">
       <div className="mb-8">
-        <h2 className="text-3xl font-bold text-white">Create Account</h2>
-        <p className="text-slate-400 mt-2 text-sm">Register your university identity.</p>
+        <h2 className="text-3xl font-bold text-slate-900">Create Account</h2>
+        <p className="text-slate-500 mt-2 text-sm">Register your university identity.</p>
       </div>
 
       <form
@@ -104,7 +104,7 @@ const SignupScreen = ({ email, setEmail, onSubmit, isLoading, goLogin }: Props) 
       </form>
 
       <div className="mt-8 text-center">
-        <button onClick={goLogin} className="text-slate-500 hover:text-white text-sm">
+        <button onClick={goLogin} className="text-slate-500 hover:text-slate-900 text-sm">
           Back to Login
         </button>
       </div>

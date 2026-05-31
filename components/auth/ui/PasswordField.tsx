@@ -38,7 +38,7 @@ const PasswordField: React.FC<Props> = ({
         onClick={() => setShow((s) => !s)}
         className="
           absolute right-4 top-[2.75rem]
-          text-slate-500 hover:text-emerald-400 transition-colors
+          text-slate-400 hover:text-emerald-500 transition-colors
         "
       >
         {show ? <EyeOffIcon className="w-5 h-5" /> : <EyeIcon className="w-5 h-5" />}
