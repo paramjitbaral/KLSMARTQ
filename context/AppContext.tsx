@@ -95,7 +95,8 @@ interface AppContextType {
   verifySignupOtp: (email: string, otp: string) => Promise<any>;
   resendSignupOtp: (email: string) => Promise<any>;
   checkEmailAvailability: (email: string) => Promise<any>;
-  requestPasswordReset: (email: string) => Promise<void>;
+  requestPasswordReset: (email: string) => Promise<{ success: boolean; message?: string }>;
+  submitPasswordReset: (email: string, otp: string, newPassword: string) => Promise<{ success: boolean; message?: string }>;
   resendVerificationOtp: (email: string) => Promise<any>;
   verifyEmailOtp: (email: string, otp: string) => Promise<any>;
 
@@ -337,7 +338,21 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const requestPasswordReset = async (email: string) => {
-    // Implement via backend
+    try {
+      await api.post("/auth/send-otp", { email, type: "RESET_PASSWORD" });
+      return { success: true };
+    } catch (err: any) {
+      return { success: false, message: err.response?.data?.error || err.message };
+    }
+  };
+
+  const submitPasswordReset = async (email: string, otp: string, newPassword: string) => {
+    try {
+      const { data } = await api.post("/auth/reset-password", { email, otp, newPassword });
+      return { success: true, message: data.message };
+    } catch (err: any) {
+      return { success: false, message: err.response?.data?.error || err.message };
+    }
   };
 
   const resendVerificationOtp = async (email: string) => {
@@ -446,6 +461,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       resendSignupOtp,
       checkEmailAvailability,
       requestPasswordReset,
+      submitPasswordReset,
       resendVerificationOtp,
       verifyEmailOtp,
       bookToken,

@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { useAppContext } from "../../context/AppContext";
-import { Token, TokenStatus, Priority } from "../../types";
+import { Token, TokenStatus, Priority, Role } from "../../types";
 
 /* ============================================================
    REUSABLE COMPONENTS
@@ -94,7 +94,7 @@ const StaffDashboard: React.FC = () => {
       offices.filter(
         (o) =>
           currentUser?.assignedOfficeIds?.includes(o.id) ||
-          currentUser?.role === "Admin"
+          currentUser?.role === Role.ADMIN
       ),
     [offices, currentUser]
   );
@@ -102,10 +102,10 @@ const StaffDashboard: React.FC = () => {
   const [selectedOfficeId, setSelectedOfficeId] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!selectedOfficeId && staffOffices.length > 0) {
+    if (!selectedOfficeId && staffOffices.length > 0 && currentUser?.role !== Role.ADMIN) {
       setSelectedOfficeId(staffOffices[0].id);
     }
-  }, [staffOffices, selectedOfficeId]);
+  }, [staffOffices, selectedOfficeId, currentUser]);
 
   const officeTokens = useMemo(
     () => tokens.filter((t) => t.officeId === selectedOfficeId),
@@ -182,19 +182,39 @@ const StaffDashboard: React.FC = () => {
       -------------------------------------------------------- */}
       <div className="block md:hidden relative pb-24">
 
-        {/* FIXED MOBILE STATS */}
+        {/* FIXED MOBILE STATS & SELECTOR */}
         <div className="fixed top-[60px] left-0 right-0 z-20 bg-[#F6F7FB] pt-3 pb-4 shadow-sm">
-          <div className="w-full flex justify-center">
-            <div className="w-80 max-w-md mx-auto flex justify-between px-3 gap-5">
-              <StatCard title="Students Waiting" value={waitingTokens.length} color="from-yellow-50 to-yellow-100" />
-              <StatCard title="Completed Today" value={completedCount} color="from-green-50 to-green-100" />
+          {(staffOffices.length > 1 || currentUser?.role === Role.ADMIN) && (
+            <div className="px-4 mb-3 flex justify-end">
+              <select
+                value={selectedOfficeId || ""}
+                onChange={(e) => setSelectedOfficeId(e.target.value)}
+                className="px-3 py-1.5 text-sm border border-neutral-300 rounded-lg bg-white w-full max-w-xs"
+              >
+                <option value="" disabled>Select Office...</option>
+                {staffOffices.map((o) => (
+                  <option key={o.id} value={o.id}>{o.name}</option>
+                ))}
+              </select>
             </div>
-          </div>
+          )}
+          {selectedOfficeId && (
+            <div className="w-full flex justify-center">
+              <div className="w-80 max-w-md mx-auto flex justify-between px-3 gap-5">
+                <StatCard title="Students Waiting" value={waitingTokens.length} color="from-yellow-50 to-yellow-100" />
+                <StatCard title="Completed Today" value={completedCount} color="from-green-50 to-green-100" />
+              </div>
+            </div>
+          )}
         </div>
 
         {/* WAITING LIST */}
-        <div className="px-3 space-y-3 mt-[150px]">
-          {waitingTokens.length > 0 ? (
+        <div className={`px-3 space-y-3 ${(staffOffices.length > 1 || currentUser?.role === Role.ADMIN) ? 'mt-[190px]' : 'mt-[150px]'}`}>
+          {!selectedOfficeId ? (
+            <div className="bg-white p-8 rounded-xl shadow-sm border text-center">
+              <p className="text-neutral-500 font-medium">Please select an office above to view its queue.</p>
+            </div>
+          ) : waitingTokens.length > 0 ? (
             waitingTokens.map((token, index) => (
               <TokenCard key={token.id} token={token} position={index + 1} />
             ))
@@ -216,9 +236,10 @@ const StaffDashboard: React.FC = () => {
             disabled:bg-neutral-300
           "
         >
-          {buttonState === "idle" && (inProgressToken ? "Complete" : "Call Next Student")}
-          {buttonState === "calling" && "Calling..."}
-          {buttonState === "arrived" && "Arrived"}
+          {selectedOfficeId && buttonState === "idle" && (inProgressToken ? "Complete" : "Call Next Student")}
+          {selectedOfficeId && buttonState === "calling" && "Calling..."}
+          {selectedOfficeId && buttonState === "arrived" && "Arrived"}
+          {!selectedOfficeId && "Select Office"}
         </button>
       </div>
 
@@ -228,15 +249,16 @@ const StaffDashboard: React.FC = () => {
       <div className="hidden md:block h-full overflow-hidden">
 
         {/* HEADER */}
-        <div className="flex flex-col md:flex-row justify-between md:items-center mb-2 px-6 pt-0 text-center md:text-left">
-          {staffOffices.length > 1 && (
+        <div className="flex justify-end mb-4 px-6">
+          {(staffOffices.length > 1 || currentUser?.role === Role.ADMIN) && (
             <select
               value={selectedOfficeId || ""}
               onChange={(e) => setSelectedOfficeId(e.target.value)}
-              className="px-4 py-2 border border-neutral-300 rounded-lg"
+              className="px-3 py-1.5 text-sm border border-neutral-300 rounded-md bg-white shadow-sm font-medium text-neutral-700 focus:ring-2 focus:ring-blue-500 focus:outline-none"
             >
+              <option value="" disabled>Select Office View...</option>
               {staffOffices.map((o) => (
-                <option key={o.id} value={o.id}>{o.name}</option>
+                <option key={o.id} value={o.id}>{o.name} View</option>
               ))}
             </select>
           )}
@@ -252,6 +274,11 @@ const StaffDashboard: React.FC = () => {
         </div>
 
         {/* MAIN GRID */}
+        {!selectedOfficeId ? (
+          <div className="flex items-center justify-center h-64 mx-6 bg-white rounded-2xl shadow-sm border border-neutral-200">
+            <p className="text-xl text-neutral-500 font-medium">Please select an office from the dropdown above to view its queue.</p>
+          </div>
+        ) : (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 px-6 pb-6 h-full overflow-hidden">
 
           {/* WAITING LIST */}
@@ -305,6 +332,7 @@ const StaffDashboard: React.FC = () => {
           </div>
 
         </div>
+        )}
       </div>
     </div>
   );

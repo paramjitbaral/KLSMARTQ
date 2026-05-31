@@ -11,6 +11,7 @@ interface Props {
   resendCooldown: number;
   isLoading: boolean;
   onBackToLogin: () => void;
+  error?: string;
 }
 
 const VerifyOtpScreen = ({
@@ -22,6 +23,7 @@ const VerifyOtpScreen = ({
   resendCooldown,
   isLoading,
   onBackToLogin,
+  error,
 }: Props) => (
   <div className="w-full h-full flex flex-col justify-center animate-fadeIn">
     <div className="mb-10 text-center">
@@ -39,6 +41,10 @@ const VerifyOtpScreen = ({
 
     <form onSubmit={onSubmit} className="flex flex-col">
       <OtpInput value={otp} onChange={setOtp} />
+
+      <div className="h-6 mt-3 mb-5 text-center">
+        {error && <span className="text-sm text-rose-500 font-medium">{error}</span>}
+      </div>
 
       <p className="text-center text-xs text-slate-500 mb-8 uppercase tracking-widest">
         Didn’t get it?

@@ -5,17 +5,17 @@ export enum Role {
 }
 
 export enum Priority {
-  NORMAL = 'Normal',
-  URGENT = 'Urgent',
-  MEDICAL = 'Medical',
+  NORMAL = 'NORMAL',
+  URGENT = 'URGENT',
+  MEDICAL = 'MEDICAL',
 }
 
 export enum TokenStatus {
-  WAITING = "Waiting",
-  CALLED = "Called",
-  IN_PROGRESS = "In Progress",
-  COMPLETED = "Completed",
-  CANCELLED = "Cancelled",
+  WAITING = "WAITING",
+  CALLED = "CALLED",
+  IN_PROGRESS = "IN_PROGRESS",
+  COMPLETED = "COMPLETED",
+  CANCELLED = "CANCELLED",
 }
 
 export interface User {

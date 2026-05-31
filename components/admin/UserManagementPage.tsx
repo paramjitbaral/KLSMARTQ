@@ -2,7 +2,7 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { useAppContext } from '../../context/AppContext';
 import { User, Role } from '../../types';
-import { EditIcon, TrashIcon } from '../common/Icons';
+import { EditIcon, TrashIcon, EyeIcon, EyeOffIcon } from '../common/Icons';
 
 // FIX: Update onSave prop to correctly handle the password field for new users.
 const UserForm: React.FC<{ user?: User; onSave: (user: (Omit<User, 'id'> & { password?: string }) | User) => Promise<void>; onCancel: () => void; onDelete?: () => void }> = ({ user, onSave, onCancel, onDelete }) => {
@@ -19,6 +19,8 @@ const UserForm: React.FC<{ user?: User; onSave: (user: (Omit<User, 'id'> & { pas
     const [error, setError] = useState('');
     const [isSaving, setIsSaving] = useState(false);
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -62,7 +64,9 @@ const UserForm: React.FC<{ user?: User; onSave: (user: (Omit<User, 'id'> & { pas
             // The parent component handles closing the modal on success
         } catch (err: any) {
             // This robust check ensures that a string is always set as the error, preventing "[object Object]".
-            if (err && err.message && typeof err.message === 'string') {
+            if (err.response?.data?.error) {
+                setError(err.response.data.error);
+            } else if (err && err.message && typeof err.message === 'string') {
                 setError(err.message);
             } else if (typeof err === 'string') {
                 setError(err);
@@ -99,8 +103,18 @@ const UserForm: React.FC<{ user?: User; onSave: (user: (Omit<User, 'id'> & { pas
                     
                     {!user && (
                         <>
-                            <input type="password" placeholder="Temporary Password" value={password} onChange={e => setPassword(e.target.value)} className="w-full p-2 border border-neutral-300 rounded-md bg-white text-neutral-900 focus:ring-primary-light focus:border-primary-light" required />
-                            <input type="password" placeholder="Confirm Temporary Password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} className="w-full p-2 border border-neutral-300 rounded-md bg-white text-neutral-900 focus:ring-primary-light focus:border-primary-light" required />
+                            <div className="relative">
+                                <input type={showPassword ? "text" : "password"} placeholder="Temporary Password" value={password} onChange={e => setPassword(e.target.value)} className="w-full p-2 border border-neutral-300 rounded-md bg-white text-neutral-900 focus:ring-primary-light focus:border-primary-light pr-10" required />
+                                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 transform -translate-y-1/2 text-neutral-500 hover:text-neutral-700">
+                                    {showPassword ? <EyeOffIcon className="w-5 h-5" /> : <EyeIcon className="w-5 h-5" />}
+                                </button>
+                            </div>
+                            <div className="relative">
+                                <input type={showConfirmPassword ? "text" : "password"} placeholder="Confirm Temporary Password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} className="w-full p-2 border border-neutral-300 rounded-md bg-white text-neutral-900 focus:ring-primary-light focus:border-primary-light pr-10" required />
+                                <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute right-3 top-1/2 transform -translate-y-1/2 text-neutral-500 hover:text-neutral-700">
+                                    {showConfirmPassword ? <EyeOffIcon className="w-5 h-5" /> : <EyeIcon className="w-5 h-5" />}
+                                </button>
+                            </div>
                         </>
                     )}
                     

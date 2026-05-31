@@ -6,6 +6,7 @@ import LoginScreen from "./screens/LoginScreen";
 import SignupScreen from "./screens/SignupScreen";
 import VerifyOtpScreen from "./screens/VerifyOtpScreen";
 import ForgotPasswordScreen from "./screens/ForgotPasswordScreen";
+import ResetPasswordScreen from "./screens/ResetPasswordScreen";
 
 
 const StudentAuthPage = () => {
@@ -15,7 +16,7 @@ const StudentAuthPage = () => {
 
   const [showOnboarding, setShowOnboarding] = useState(true);
   const [authState, setAuthState] = useState<
-    "login" | "signup" | "verify" | "forgot_password"
+    "login" | "signup" | "verify" | "forgot_password" | "reset_password"
   >("login");
 
   // Shared states
@@ -137,10 +138,30 @@ const StudentAuthPage = () => {
     const res = await requestPasswordReset(email);
 
     if (res.success) {
-      setInfo("If registered, a reset link has been emailed.");
+      setInfo("A reset code has been emailed to you.");
+      otpEmailRef.current = email;
+      switchState("reset_password");
+    } else {
+      setError(res.message || "Failed to send reset code.");
+    }
+
+    setIsLoading(false);
+  };
+
+  const handleSubmitPasswordReset = async (e: any) => {
+    e.preventDefault();
+    setError("");
+    setInfo("");
+    setIsLoading(true);
+
+    const { submitPasswordReset } = useAppContext();
+    const res = await submitPasswordReset(email, otp, password);
+
+    if (res.success) {
+      setInfo("Password updated successfully. You can now login.");
       setTimeout(() => switchState("login"), 2500);
     } else {
-      setError(res.message);
+      setError(res.message || "Failed to reset password.");
     }
 
     setIsLoading(false);
@@ -185,19 +206,19 @@ const StudentAuthPage = () => {
         />
 
         <div className="w-full max-w-md relative z-10">
-          {/* Errors */}
-          {error && (
-            <div className="mb-6 p-4 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-400 text-sm font-mono flex items-center gap-3">
-              <span className="text-xl">!</span> {error}
-            </div>
-          )}
-
-          {/* Info */}
-          {info && (
-            <div className="mb-6 p-4 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm font-mono flex items-center gap-3">
-              <span className="text-xl">✓</span> {info}
-            </div>
-          )}
+          {/* Notifications */}
+          <div className="absolute -top-24 left-0 right-0 flex flex-col items-center gap-3 z-50 pointer-events-none">
+            {error && authState !== "verify" && (
+              <div className="mx-auto w-fit px-4 py-3 rounded-lg bg-rose-50 border border-rose-200 text-rose-600 text-sm font-medium flex items-center gap-3 shadow-sm pointer-events-auto">
+                <span className="text-rose-500 text-lg">!</span> {error}
+              </div>
+            )}
+            {info && (
+              <div className="mx-auto w-fit px-4 py-3 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-600 text-sm font-medium flex items-center gap-3 shadow-sm pointer-events-auto">
+                <span className="text-emerald-500 text-lg">✓</span> {info}
+              </div>
+            )}
+          </div>
 
           {/* Screens */}
           {authState === "login" && (
@@ -233,6 +254,7 @@ const StudentAuthPage = () => {
               onSubmit={handleVerifyOtp}
               isLoading={isLoading}
               onBackToLogin={() => switchState("login")}
+              error={error}
             />
           )}
 
@@ -243,6 +265,20 @@ const StudentAuthPage = () => {
               onSubmit={handlePasswordReset}
               isLoading={isLoading}
               onBackToLogin={() => switchState("login")}
+            />
+          )}
+
+          {authState === "reset_password" && (
+            <ResetPasswordScreen
+              email={email}
+              otp={otp}
+              setOtp={setOtp}
+              password={password}
+              setPassword={setPassword}
+              onSubmit={handleSubmitPasswordReset}
+              isLoading={isLoading}
+              onBackToLogin={() => switchState("login")}
+              error={error}
             />
           )}
         </div>
