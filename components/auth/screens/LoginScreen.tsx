@@ -13,6 +13,8 @@ interface Props {
   isLoading: boolean;
   goSignup: () => void;
   goForgot: () => void;
+  error?: string;
+  info?: string;
 }
 
 const LoginScreen = ({
@@ -24,6 +26,8 @@ const LoginScreen = ({
   isLoading,
   goSignup,
   goForgot,
+  error,
+  info,
 }: Props) => (
   <div className="w-full h-full flex flex-col justify-center animate-fadeIn">
     <div className="mb-10">
@@ -65,6 +69,17 @@ const LoginScreen = ({
           Forgot?
         </button>
       </div>
+
+      {error && (
+        <div className="text-rose-500 text-sm font-medium mt-2">
+          {error}
+        </div>
+      )}
+      {info && (
+        <div className="text-emerald-500 text-sm font-medium mt-2">
+          {info}
+        </div>
+      )}
 
       <AuthButton type="submit" isLoading={isLoading}>
         Login

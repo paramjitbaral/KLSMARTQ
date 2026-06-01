@@ -8,6 +8,8 @@ interface Props {
   onSubmit: (e: any) => void;
   isLoading: boolean;
   onBackToLogin: () => void;
+  error?: string;
+  info?: string;
 }
 
 const ForgotPasswordScreen = ({
@@ -16,12 +18,14 @@ const ForgotPasswordScreen = ({
   onSubmit,
   isLoading,
   onBackToLogin,
+  error,
+  info,
 }: Props) => (
   <div className="w-full h-full flex flex-col justify-center animate-fadeIn">
     <div className="mb-10">
       <h2 className="text-3xl font-bold text-slate-900">Reset Password</h2>
       <p className="text-slate-500 mt-2 text-sm">
-        A reset link will be emailed to you.
+        A reset code will be emailed to you.
       </p>
     </div>
 
@@ -36,8 +40,19 @@ const ForgotPasswordScreen = ({
         label="Email"
       />
 
+      {error && (
+        <div className="text-rose-500 text-sm font-medium mt-2">
+          {error}
+        </div>
+      )}
+      {info && (
+        <div className="text-emerald-500 text-sm font-medium mt-2">
+          {info}
+        </div>
+      )}
+
       <AuthButton type="submit" isLoading={isLoading}>
-        Send Reset Link
+        Send Reset Code
       </AuthButton>
 
       <button

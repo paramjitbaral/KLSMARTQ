@@ -146,9 +146,9 @@ const OfficeManagementPage: React.FC = () => {
 
   return (
     <div>
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl md:text-3xl font-bold text-neutral-800">Office Management</h1>
-        <button onClick={() => { setEditingOffice(undefined); setIsModalOpen(true); }} className="px-4 py-2 bg-primary text-white rounded-lg font-semibold hover:bg-primary-light">Add Office</button>
+      <div className="flex flex-wrap justify-between items-center mb-6 gap-4">
+        <h1 className="text-xl md:text-3xl font-bold text-neutral-800 leading-tight">Office Management</h1>
+        <button onClick={() => { setEditingOffice(undefined); setIsModalOpen(true); }} className="px-3 py-1.5 md:px-4 md:py-2 text-sm md:text-base bg-primary text-white rounded-lg font-semibold hover:bg-primary-light">Add Office</button>
       </div>
 
       {/* Mobile Card View */}

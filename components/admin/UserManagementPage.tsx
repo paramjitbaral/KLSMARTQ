@@ -299,23 +299,23 @@ const UserManagementPage: React.FC = () => {
 
   return (
     <div>
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl md:text-3xl font-bold text-neutral-800">User Management</h1>
-        <button onClick={() => { setEditingUser(undefined); setIsModalOpen(true); }} className="px-4 py-2 bg-primary text-white rounded-lg font-semibold hover:bg-primary-light">Add User</button>
+      <div className="flex flex-wrap justify-between items-center mb-6 gap-4">
+        <h1 className="text-xl md:text-3xl font-bold text-neutral-800 leading-tight">User Management</h1>
+        <button onClick={() => { setEditingUser(undefined); setIsModalOpen(true); }} className="px-3 py-1.5 md:px-4 md:py-2 text-sm md:text-base bg-primary text-white rounded-lg font-semibold hover:bg-primary-light">Add User</button>
       </div>
 
-      <div className="flex items-center space-x-4 mb-4">
+      <div className="flex flex-col sm:flex-row items-center sm:space-x-4 space-y-3 sm:space-y-0 mb-6">
         <input
             type="text"
             placeholder="Search by name or email..."
             value={searchTerm}
             onChange={e => setSearchTerm(e.target.value)}
-            className="w-full md:w-1/3 px-4 py-2 border border-neutral-300 rounded-lg bg-white text-neutral-900 focus:ring-primary-light focus:border-primary-light"
+            className="w-full sm:w-2/3 md:w-1/3 px-4 py-2 border border-neutral-300 rounded-lg bg-white text-neutral-900 focus:ring-primary-light focus:border-primary-light"
         />
         <select
             value={roleFilter}
             onChange={e => setRoleFilter(e.target.value as Role | 'All')}
-            className="px-4 py-2 border border-neutral-300 rounded-lg bg-white text-neutral-900 focus:ring-primary-light focus:border-primary-light"
+            className="w-full sm:w-auto px-4 py-2 border border-neutral-300 rounded-lg bg-white text-neutral-900 focus:ring-primary-light focus:border-primary-light"
         >
             <option value="All">All Roles</option>
             <option value={Role.ADMIN}>Admin</option>

@@ -11,7 +11,7 @@ import ResetPasswordScreen from "./screens/ResetPasswordScreen";
 
 const StudentAuthPage = () => {
   usePullToRefresh();
-  const { login, signup, verifySignupOtp, resendSignupOtp, requestPasswordReset } =
+  const { login, signup, verifySignupOtp, resendSignupOtp, requestPasswordReset, submitPasswordReset } =
     useAppContext();
 
   const [showOnboarding, setShowOnboarding] = useState(true);
@@ -140,6 +140,7 @@ const StudentAuthPage = () => {
     if (res.success) {
       setInfo("A reset code has been emailed to you.");
       otpEmailRef.current = email;
+      setResendCooldown(60);
       switchState("reset_password");
     } else {
       setError(res.message || "Failed to send reset code.");
@@ -148,13 +149,25 @@ const StudentAuthPage = () => {
     setIsLoading(false);
   };
 
+  /* ---------------------- RESEND RESET OTP ---------------------- */
+  const handleResendResetOtp = async () => {
+    if (resendCooldown > 0) return;
+    const res = await requestPasswordReset(otpEmailRef.current);
+
+    if (res.success) {
+      setResendCooldown(60);
+      setInfo("New reset code sent.");
+    } else {
+      setError(res.message || "Failed to send reset code.");
+    }
+  };
+
   const handleSubmitPasswordReset = async (e: any) => {
     e.preventDefault();
     setError("");
     setInfo("");
     setIsLoading(true);
 
-    const { submitPasswordReset } = useAppContext();
     const res = await submitPasswordReset(email, otp, password);
 
     if (res.success) {
@@ -206,20 +219,6 @@ const StudentAuthPage = () => {
         />
 
         <div className="w-full max-w-md relative z-10">
-          {/* Notifications */}
-          <div className="absolute -top-24 left-0 right-0 flex flex-col items-center gap-3 z-50 pointer-events-none">
-            {error && authState !== "verify" && (
-              <div className="mx-auto w-fit px-4 py-3 rounded-lg bg-rose-50 border border-rose-200 text-rose-600 text-sm font-medium flex items-center gap-3 shadow-sm pointer-events-auto">
-                <span className="text-rose-500 text-lg">!</span> {error}
-              </div>
-            )}
-            {info && (
-              <div className="mx-auto w-fit px-4 py-3 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-600 text-sm font-medium flex items-center gap-3 shadow-sm pointer-events-auto">
-                <span className="text-emerald-500 text-lg">✓</span> {info}
-              </div>
-            )}
-          </div>
-
           {/* Screens */}
           {authState === "login" && (
             <LoginScreen
@@ -231,6 +230,8 @@ const StudentAuthPage = () => {
               isLoading={isLoading}
               goSignup={() => switchState("signup")}
               goForgot={() => switchState("forgot_password")}
+              error={error}
+              info={info}
             />
           )}
 
@@ -241,6 +242,7 @@ const StudentAuthPage = () => {
               onSubmit={handleSignup}
               isLoading={isLoading}
               goLogin={() => switchState("login")}
+              error={error}
             />
           )}
 
@@ -265,6 +267,8 @@ const StudentAuthPage = () => {
               onSubmit={handlePasswordReset}
               isLoading={isLoading}
               onBackToLogin={() => switchState("login")}
+              error={error}
+              info={info}
             />
           )}
 
@@ -279,6 +283,8 @@ const StudentAuthPage = () => {
               isLoading={isLoading}
               onBackToLogin={() => switchState("login")}
               error={error}
+              resendCooldown={resendCooldown}
+              onResend={handleResendResetOtp}
             />
           )}
         </div>

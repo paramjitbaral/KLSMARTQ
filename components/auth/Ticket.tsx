@@ -58,6 +58,7 @@ const Ticket = ({ id, initialPos, phase, index, total }: TicketProps) => {
       className={`
         absolute top-1/2 left-1/2
         w-64 h-40 md:w-72 md:h-44
+        -ml-32 -mt-12 md:-ml-36
         rounded-2xl flex flex-col justify-between p-6
         transition-all duration-[1300ms] ease-out
         bg-slate-800 border border-slate-700/80
@@ -65,8 +66,6 @@ const Ticket = ({ id, initialPos, phase, index, total }: TicketProps) => {
       `}
       style={{
         transform: getTransform(),
-        marginLeft: "-9rem",
-        marginTop: "-3rem",
         opacity: finalOpacity,
         transitionDelay: `${index * 80}ms`,
          transitionDuration:

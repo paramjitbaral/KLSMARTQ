@@ -2,7 +2,7 @@ import React from "react";
 import { Token, TokenStatus } from "../../types";
 import { QrCodeIcon } from "../common/Icons";
 
-const PRIMARY = "#0A4DBF"; // same blue as your app
+const PRIMARY = "#0A4DBF";
 
 interface TokenCardProps {
   token: Token;
@@ -22,53 +22,29 @@ const TokenCard: React.FC<TokenCardProps> = ({
   const isWaiting = token.status === TokenStatus.WAITING;
 
   return (
-    <div
-      className="
-        max-w-4xl mx-auto mb-6
-        bg-white rounded-3xl
-        shadow-[0_10px_35px_rgba(15,23,42,0.12)]
-        border border-slate-200
-        overflow-hidden
-      "
-    >
-      {/* TOP STRIP – OFFICE + STATUS */}
-      <div
-        className="
-          flex items-center justify-between
-          px-5 py-3
-          border-b border-slate-200
-          bg-slate-50
-        "
-      >
-        <div className="flex flex-col">
-          <span className="text-[11px] font-semibold tracking-[0.18em] text-slate-500 uppercase">
+    <div className="max-w-5xl mx-auto mb-6 bg-white rounded-[16px] shadow-[0_2px_12px_rgba(15,23,42,0.04)] border border-slate-200 overflow-hidden font-sans">
+
+      {/* Top Header Strip */}
+      <div className="flex justify-between items-center px-5 py-2 border-b border-slate-100 bg-slate-50/50">
+        <div>
+          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">
             Office
           </span>
-          <span className="text-base md:text-lg font-semibold text-slate-900">
+          <span className="text-lg md:text-xl font-bold text-slate-800 tracking-tight leading-none">
             {officeName}
           </span>
         </div>
-
         <div className="flex items-center gap-3">
-          <div className="text-right hidden sm:block">
-            <span className="text-[11px] font-semibold tracking-[0.18em] text-slate-500 uppercase">
-              Token
-            </span>
-            <div className="text-2xl md:text-3xl font-bold text-slate-900">
-              {token.tokenNumber}
-            </div>
-          </div>
-
+          <span className="text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-widest hidden sm:block">
+            Token
+          </span>
           <span
-            className={`
-              inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold
-              border
-              ${
-                token.status === TokenStatus.IN_PROGRESS
-                  ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                  : token.status === TokenStatus.WAITING
-                  ? "bg-amber-50 text-amber-700 border-amber-200"
-                  : "bg-slate-50 text-slate-700 border-slate-200"
+            className={`inline-flex items-center px-3 py-1 rounded-full text-[11px] font-semibold tracking-wide
+              ${token.status === TokenStatus.IN_PROGRESS
+                ? "bg-emerald-50 text-emerald-600 border border-emerald-100"
+                : token.status === TokenStatus.WAITING
+                  ? "bg-[#FFF9EB] text-[#D97706] border border-[#FDE68A]"
+                  : "bg-slate-50 text-slate-600 border border-slate-200"
               }
             `}
           >
@@ -77,145 +53,101 @@ const TokenCard: React.FC<TokenCardProps> = ({
         </div>
       </div>
 
-      {/* MAIN BODY */}
-      <div className="flex flex-col md:flex-row relative">
-        {/* LEFT PANEL – TOKEN & PURPOSE */}
-        <div
-          className="
-            relative
-            md:w-7/12
-            px-6 py-5
-            flex flex-col gap-4
-          "
-        >
-          {/* Perforation circles (ticket feel) */}
-          <div className="hidden md:block absolute right-[-16px] top-10 w-8 h-8 bg-slate-100 rounded-full" />
-          <div className="hidden md:block absolute right-[-16px] bottom-10 w-8 h-8 bg-slate-100 rounded-full" />
-
-          {/* Token big for mobile */}
-          <div className="sm:hidden">
-            <p className="text-[11px] font-semibold tracking-[0.18em] text-slate-500 uppercase">
-              Token
-            </p>
-            <p className="text-4xl font-extrabold text-slate-900">
-              {token.tokenNumber}
-            </p>
-          </div>
-
-          {/* Student name & purpose */}
-          <div className="space-y-1">
-            <p className="text-[11px] font-semibold tracking-[0.18em] text-slate-500 uppercase">
+      {/* Main Body */}
+      <div className="flex flex-row relative">
+        
+        {/* Left Section */}
+        <div className="w-[60%] sm:w-[55%] p-3.5 sm:px-5 sm:py-4 flex flex-col gap-3 relative justify-center">
+          
+          <div>
+            <span className="text-[9px] sm:text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-widest block mb-1">
               Student
-            </p>
-            <p className="text-base md:text-lg font-semibold text-slate-900">
+            </span>
+            <span className="text-xs sm:text-sm md:text-base font-bold text-slate-800 truncate block">
               {studentName}
-            </p>
+            </span>
           </div>
-
-          <div className="space-y-1">
-            <p className="text-[11px] font-semibold tracking-[0.18em] text-slate-500 uppercase">
+            
+          <div>
+            <span className="text-[9px] sm:text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-widest block mb-1">
               Purpose
-            </p>
-            <p className="text-sm md:text-base text-slate-800">
+            </span>
+            <span className="text-[10px] sm:text-xs md:text-sm font-medium text-slate-600 truncate block">
               {token.purpose}
-            </p>
+            </span>
           </div>
 
-          {/* Small meta row */}
-          <div className="mt-2 grid grid-cols-2 gap-4 text-xs md:text-sm">
+          <div className="grid grid-cols-2 gap-2">
             <div>
-              <p className="text-[11px] font-semibold tracking-[0.18em] text-slate-500 uppercase">
-                Queue Position
-              </p>
-              <p className="text-lg font-bold text-slate-900">{position}</p>
+              <span className="text-[8px] sm:text-[9px] md:text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">
+                Queue
+              </span>
+              <span className="text-xs sm:text-sm md:text-base font-bold text-slate-800">
+                {position}
+              </span>
             </div>
             <div>
-              <p className="text-[11px] font-semibold tracking-[0.18em] text-slate-500 uppercase">
+              <span className="text-[8px] sm:text-[9px] md:text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">
                 Priority
-              </p>
-              <p className="text-sm font-medium text-slate-900">
+              </span>
+              <span className="text-xs sm:text-sm md:text-base font-bold text-slate-800 truncate block">
                 {token.priority}
-              </p>
+              </span>
             </div>
           </div>
         </div>
 
-        {/* RIGHT PANEL – BIG TOKEN + CHECK-IN */}
-        <div
-          className="
-            md:w-5/12
-            border-t md:border-t-0 md:border-l border-dashed border-slate-200
-            px-6 py-5
-            flex flex-col justify-between gap-4
-            bg-slate-50/60
-          "
-        >
-          {/* Big token for desktop */}
-          <div className="hidden sm:flex flex-col items-center">
-            <p className="text-[11px] font-semibold tracking-[0.18em] text-slate-500 uppercase">
-              Your Token
-            </p>
-            <p className="text-4xl md:text-5xl font-extrabold text-slate-900 tracking-tight">
-              {token.tokenNumber}
-            </p>
-          </div>
+        {/* Vertical Divider (All Screens) */}
+        <div className="flex relative w-0 border-l border-dashed border-slate-200 flex-col justify-between items-center">
+          <div className="absolute top-2 sm:top-3 left-[-6px] sm:left-[-8px] w-3 h-3 sm:w-4 sm:h-4 bg-[#F6F7FB] rounded-full" />
+          <div className="absolute bottom-2 sm:bottom-3 left-[-6px] sm:left-[-8px] w-3 h-3 sm:w-3 sm:h-4 bg-[#F6F7FB] rounded-full" />
+        </div>
 
-          {/* Info row */}
-          <div className="grid grid-cols-3 gap-3 text-center text-xs md:text-sm">
+        {/* Right Section */}
+        <div className="w-[40%] sm:w-[45%] p-3 sm:px-5 sm:py-3 flex flex-col items-center justify-center">
+
+          <span className="text-[8px] sm:text-[9px] md:text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-0.5 sm:mb-1">
+            Your Token
+          </span>
+          <span className="text-2xl sm:text-3xl md:text-4xl font-black text-slate-800 tracking-tight leading-none mb-2 sm:mb-3">
+            {token.tokenNumber}
+          </span>
+
+          <div className="flex w-full justify-around text-center gap-1 sm:gap-2 mb-2 sm:mb-3">
             <div>
-              <p className="text-[11px] font-semibold tracking-[0.18em] text-slate-500 uppercase">
+              <span className="text-[8px] sm:text-[10px] md:text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-0.5 sm:mb-1">
                 Status
-              </p>
-              <p className="mt-1 font-semibold text-slate-900">
+              </span>
+              <span className="text-[10px] sm:text-xs font-semibold text-slate-800">
                 {token.status.replace("_", " ")}
-              </p>
+              </span>
             </div>
             <div>
-              <p className="text-[11px] font-semibold tracking-[0.18em] text-slate-500 uppercase">
-                Queue
-              </p>
-              <p className="mt-1 font-semibold text-slate-900">{position}</p>
-            </div>
-            <div>
-              <p className="text-[11px] font-semibold tracking-[0.18em] text-slate-500 uppercase">
-                Est. Wait
-              </p>
-              <p className="mt-1 font-semibold text-slate-900">—</p>
+              <span className="text-[8px] sm:text-[10px] md:text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-0.5 sm:mb-1">
+                Wait
+              </span>
+              <span className="text-[10px] sm:text-xs font-semibold text-slate-800">
+                —
+              </span>
             </div>
           </div>
 
-          {/* Check-in button */}
-          {isWaiting && (
+          {isWaiting ? (
             <button
               onClick={() => onCheckIn(token)}
-              className="
-                w-full mt-1 inline-flex items-center justify-center gap-2
-                rounded-xl py-3
-                text-sm md:text-base font-semibold
-                text-white
-                shadow-[0_10px_25px_rgba(15,23,42,0.35)]
-                transition-transform duration-150
-                active:scale-[0.97]
-              "
+              className="w-full flex justify-center items-center gap-1 sm:gap-2 py-1.5 sm:py-2 rounded-lg text-[10px] sm:text-sm font-semibold text-white transition-all active:scale-[0.98] shadow-sm hover:shadow-md mt-1"
               style={{ backgroundColor: PRIMARY }}
             >
-              <QrCodeIcon className="w-5 h-5" />
-              <span>Scan to Check In</span>
+              <QrCodeIcon className="w-3 h-3 sm:w-4 sm:h-4" />
+              <span>Check In</span>
             </button>
+          ) : (
+            <div className="w-full text-center py-1.5 sm:py-2 rounded-lg border border-slate-200 bg-slate-50 mt-1">
+              <span className="text-[9px] sm:text-[11px] font-medium text-slate-500">Processed</span>
+            </div>
           )}
 
-          {!isWaiting && (
-            <p className="text-[11px] text-slate-500 text-center mt-1">
-              This token is no longer in waiting status.
-            </p>
-          )}
         </div>
-      </div>
-
-      {/* FOOTER STRIP */}
-      <div className="px-6 py-3 border-t border-slate-200 bg-white flex justify-between text-[11px] text-slate-500">
-        <span>KL SmartQ · Digital Queue Pass</span>
-        <span>Generated • {token.createdAt.toLocaleString()}</span>
       </div>
     </div>
   );

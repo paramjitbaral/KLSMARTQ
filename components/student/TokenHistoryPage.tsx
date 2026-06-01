@@ -3,12 +3,12 @@ import { useAppContext } from "../../context/AppContext";
 import { Token, TokenStatus } from "../../types";
 
 /* ---------------- STATUS COLORS ---------------- */
-const statusColor: Record<TokenStatus, string> = {
-  "Waiting": "text-red-600",
-  "Called": "text-orange-600",
-  "In Progress": "text-blue-600",
-  "Completed": "text-green-600",
-  "Cancelled": "text-gray-500",
+const statusStyle: Record<string, string> = {
+  WAITING: "bg-[#FFF9EB] text-[#D97706] border border-[#FDE68A]",
+  CALLED: "bg-orange-50 text-orange-700 border border-orange-200",
+  IN_PROGRESS: "bg-emerald-50 text-emerald-700 border border-emerald-200",
+  COMPLETED: "bg-slate-50 text-slate-700 border border-slate-200",
+  CANCELLED: "bg-red-50 text-red-700 border border-red-200",
 };
 
 /* ---------------- SINGLE CARD ---------------- */
@@ -38,79 +38,53 @@ const TokenHistoryCard: React.FC<{ token: Token }> = ({ token }) => {
     ? `${completedAt.toLocaleDateString()} • ${completedAt.toLocaleTimeString()}`
     : null;
 
+  const styleClass = statusStyle[token.status] || "bg-slate-50 text-slate-600 border border-slate-200";
+
   return (
-    <div
-      style={{ outline: "1px solid transparent" }} // 🔥 Flicker Fix #1
-      className="
-        relative w-full 
-        bg-white/80 backdrop-blur-xl 
-        border border-gray-200
-        shadow-[0_8px_28px_rgba(0,0,0,0.08)]
-        rounded-3xl 
-        p-5
+    <div className="w-full bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden hover:shadow-md transition-shadow">
+      <div className="p-3 sm:p-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-5">
+        
+        {/* Left Side: Position & Details */}
+        <div className="flex items-center gap-3 sm:gap-5 w-full sm:w-auto">
+          
+          {/* Position Box */}
+          <div className="bg-slate-50 border border-slate-100 rounded-xl p-2.5 sm:p-3 min-w-[64px] sm:min-w-[80px] flex flex-col items-center justify-center text-center shadow-sm">
+            <span className="text-[8px] sm:text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-0.5 sm:mb-1">
+              Pos
+            </span>
+            <span className="text-xl sm:text-2xl font-black text-[#0A4DBF] leading-none">
+              #{queuePositionAtBooking}
+            </span>
+          </div>
 
-        /* 🔥 Flicker Fix #2 & #3 */
-        transform-gpu 
-        will-change-transform
+          {/* Details */}
+          <div className="flex flex-col flex-1">
+            <span className="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5 sm:mb-1">
+              {office?.name || "Office"}
+            </span>
+            <span className="text-sm sm:text-base font-bold text-slate-800 leading-tight">
+              {token.purpose}
+            </span>
+            <span className="text-[10px] sm:text-xs font-medium text-slate-500 mt-1 sm:mt-1.5">
+              Booked: {bookedString}
+            </span>
+          </div>
+        </div>
 
-        transition-all duration-300 
-        hover:shadow-[0_16px_45px_rgba(0,0,0,0.16)]
-        hover:-translate-y-0.5
-
-        max-md:p-3
-        max-md:rounded-2xl
-      "
-    >
-      <div className="relative z-10 flex flex-col gap-3 max-md:gap-2">
-        {/* OFFICE */}
-        <p className="text-[11px] tracking-wide uppercase text-gray-500">
-          {office?.name || "Office"}
-        </p>
-
-        {/* QUEUE POSITION + STATUS */}
-        <div className="flex justify-between items-start w-full">
-          <p className="text-2xl font-bold text-gray-900 max-md:text-xl">
-            #{queuePositionAtBooking}
-          </p>
-
-          <span
-            className={`
-              font-semibold 
-              text-sm max-md:text-xs 
-              ${statusColor[token.status]}
-            `}
-          >
-            {token.status}
+        {/* Right Side: Status & Timeline */}
+        <div className="flex flex-row sm:flex-col items-center sm:items-end justify-between w-full sm:w-auto pt-3 sm:pt-0 border-t sm:border-t-0 border-slate-100">
+          <span className={`inline-flex items-center justify-center px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg text-[9px] sm:text-[10px] font-bold uppercase tracking-wider mb-0 sm:mb-2 ${styleClass}`}>
+            {token.status.replace("_", " ")}
+          </span>
+          <span className="text-[10px] sm:text-[11px] font-medium text-slate-400 text-right">
+            {completedString ? (
+              <>Completed:<br className="hidden sm:block" /> {completedString}</>
+            ) : (
+              "Not Completed"
+            )}
           </span>
         </div>
 
-        {/* PURPOSE */}
-        <p
-          className="
-            text-gray-800 text-[15px] font-medium
-            max-md:text-sm
-            max-md:truncate max-md:w-[180px]
-          "
-        >
-          {token.purpose}
-        </p>
-
-        {/* TIMES */}
-        <div className="flex justify-between items-center mt-1">
-          <p className="text-gray-600 text-sm max-md:text-[11px]">
-            {bookedString}
-          </p>
-
-          {completedString ? (
-            <p className="text-gray-600 text-sm max-md:text-[11px] text-right">
-              {completedString}
-            </p>
-          ) : (
-            <p className="italic text-gray-400 text-sm max-md:text-[11px]">
-              Not Completed
-            </p>
-          )}
-        </div>
       </div>
     </div>
   );

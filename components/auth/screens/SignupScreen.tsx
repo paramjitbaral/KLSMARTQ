@@ -10,9 +10,10 @@ interface Props {
   onSubmit: (name: string, pass: string) => void;
   isLoading: boolean;
   goLogin: () => void;
+  error?: string;
 }
 
-const SignupScreen = ({ email, setEmail, onSubmit, isLoading, goLogin }: Props) => {
+const SignupScreen = ({ email, setEmail, onSubmit, isLoading, goLogin, error }: Props) => {
   const { checkEmailAvailability } = useAppContext();
 
   const [name, setName] = useState("");
@@ -96,6 +97,12 @@ const SignupScreen = ({ email, setEmail, onSubmit, isLoading, goLogin }: Props) 
 
         {!valid && confirm && password !== confirm && (
           <p className="text-xs text-rose-500 text-right">Passwords do not match</p>
+        )}
+        
+        {error && (
+          <div className="text-rose-500 text-sm font-medium mt-2">
+            {error}
+          </div>
         )}
 
         <AuthButton type="submit" disabled={!valid} isLoading={isLoading}>

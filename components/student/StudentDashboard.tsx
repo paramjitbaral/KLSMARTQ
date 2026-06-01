@@ -71,11 +71,11 @@ const StudentDashboard: React.FC = () => {
   };
 
   return (
-    <div className="space-y-10 pb-10">
+    <div className="space-y-8 pb-10">
 
       {/* RESPONSIVE STATS */}
-      <div className="w-full flex justify-center">
-        <div className="w-full max-w-3xl mx-auto flex justify-between px-3 gap-3">
+      <div className="w-full flex justify-center pt-4">
+        <div className="w-full max-w-3xl mx-auto flex justify-center px-3 gap-4">
           {[
             { title: "Active Tokens", value: activeTokens.length, color: "from-blue-50 to-blue-100", mobile: true },
             { title: "Processing Now", value: activeTokens.filter(t => t.status === TokenStatus.IN_PROGRESS).length, color: "from-purple-50 to-pink-100", mobile: false },
@@ -87,9 +87,9 @@ const StudentDashboard: React.FC = () => {
                 flex flex-col items-center justify-center
                 rounded-3xl bg-gradient-to-br ${item.color}
                 border border-gray-200 backdrop-blur-xl
-                flex-1
-                md:h-32 md:min-w-[180px]
-                h-24 min-w-[130px]
+                w-[45%] max-w-[160px]
+                md:h-32 md:max-w-[200px]
+                h-24
                 ${item.mobile ? "flex" : "hidden md:flex"}
               `}
             >

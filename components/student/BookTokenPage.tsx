@@ -82,13 +82,14 @@ const BookTokenPage: React.FC = () => {
   };
 
   return (
-    <div className="w-full">
-      {/* Heading only on mobile */}
-      <h1 className="text-2xl font-bold text-neutral-900 mb-4 lg:hidden text-center">
-        Book a New Token
-      </h1>
+    <div className="w-full min-h-[75vh] flex flex-col justify-center items-center py-4">
+      <div className="w-full max-w-xl">
+        {/* Heading only on mobile */}
+        <h1 className="text-2xl font-bold text-neutral-900 mb-6 lg:hidden text-center">
+          Book a New Token
+        </h1>
 
-      <div className="max-w-xl mx-auto bg-white p-6 lg:p-8 rounded-2xl shadow-md border border-neutral-200 mt-2 lg:mt-4">
+        <div className="bg-white p-6 lg:p-8 rounded-2xl shadow-md border border-neutral-200">
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* OFFICE (custom dropdown) */}
           <div>
@@ -242,6 +243,7 @@ const BookTokenPage: React.FC = () => {
             </button>
           </div>
         </form>
+      </div>
       </div>
     </div>
   );
