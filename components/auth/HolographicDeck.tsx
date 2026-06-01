@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from "react";
 import Ticket from "./Ticket";
-import { playSfx, useAudioUnlock } from "./soundEngine";
+
 
 const HolographicDeck = ({ onComplete }: { onComplete: () => void }) => {
-  useAudioUnlock();
-
   const [phase, setPhase] = useState(0);
   const [tickets, setTickets] = useState<any[]>([]);
 
@@ -77,9 +75,6 @@ const HolographicDeck = ({ onComplete }: { onComplete: () => void }) => {
     if (window.innerWidth < 1024) return; // Only desktops
 
     const interval = setInterval(() => {
-      playSfx("click");
-      setTimeout(() => playSfx("whoosh"), 120);
-
       setPhase((prev) => (prev + 1) % 3);
     }, 5500); // Slow cinematic cycle
 
@@ -90,9 +85,6 @@ const HolographicDeck = ({ onComplete }: { onComplete: () => void }) => {
         MANUAL NAVIGATION
   ---------------------------------------------------------- */
   const handleNext = () => {
-    playSfx("click");
-    setTimeout(() => playSfx("whoosh"), 120);
-
     if (phase < 2) setPhase(phase + 1);
     else onComplete(); // Only manual click closes
   };
