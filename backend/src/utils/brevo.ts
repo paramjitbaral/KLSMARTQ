@@ -23,7 +23,7 @@ export const sendOTP = async (email: string, otp: string) => {
               
               <div style="background-color: #f1f5f9; border-radius: 8px; padding: 24px; margin-bottom: 32px;">
                 <p style="color: #475569; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; font-weight: 600;">Your Verification Code</p>
-                <div style="font-size: 42px; font-weight: 800; color: #0f172a; letter-spacing: 6px;">${otp}</div>
+                <div style="font-size: 36px; font-weight: 800; color: #0f172a; letter-spacing: 4px; white-space: nowrap;">${otp}</div>
               </div>
               
               <p style="color: #64748b; font-size: 14px; line-height: 1.6; text-align: left;">

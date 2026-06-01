@@ -172,12 +172,14 @@ const StudentAuthPage = () => {
 
     if (res.success) {
       setInfo("Password updated successfully. You can now login.");
-      setTimeout(() => switchState("login"), 2500);
+      setTimeout(() => {
+        setIsLoading(false);
+        switchState("login");
+      }, 2500);
     } else {
       setError(res.message || "Failed to reset password.");
+      setIsLoading(false);
     }
-
-    setIsLoading(false);
   };
 
   /* ---------------------- RENDER ---------------------- */
@@ -283,6 +285,7 @@ const StudentAuthPage = () => {
               isLoading={isLoading}
               onBackToLogin={() => switchState("login")}
               error={error}
+              info={info}
               resendCooldown={resendCooldown}
               onResend={handleResendResetOtp}
             />

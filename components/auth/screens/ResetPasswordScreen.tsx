@@ -25,6 +25,7 @@ interface Props {
   isLoading: boolean;
   onBackToLogin: () => void;
   error?: string;
+  info?: string;
   resendCooldown?: number;
   onResend?: () => void;
 }
@@ -39,6 +40,7 @@ const ResetPasswordScreen = ({
   isLoading,
   onBackToLogin,
   error,
+  info,
   resendCooldown = 0,
   onResend,
 }: Props) => {
@@ -163,8 +165,9 @@ const ResetPasswordScreen = ({
           </div>
         )}
 
-        <div className="h-6 mt-1 mb-2 text-center flex items-center justify-center">
+        <div className="h-6 mt-1 mb-2 text-center flex flex-col items-center justify-center">
           {currentError && <span className="text-sm text-rose-500 font-medium">{currentError}</span>}
+          {info && !currentError && <span className="text-sm text-emerald-500 font-medium">{info}</span>}
         </div>
 
         <div className="pt-2">
