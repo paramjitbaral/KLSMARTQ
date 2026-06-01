@@ -61,20 +61,8 @@ const MathCaptcha: React.FC<Props> = ({ onValidate }) => {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="Ans"
-            className={`
-              w-full px-3 py-3.5 rounded-xl text-center text-[14px] font-bold outline-none transition-all duration-200 shadow-sm
-              ${isCorrect
-                ? "bg-emerald-50 border-emerald-300 text-emerald-700 ring-2 ring-emerald-500/20"
-                : "bg-white border-slate-200/80 text-slate-900 hover:border-slate-300 focus:border-emerald-500/40 focus:ring-4 focus:ring-emerald-500/10"
-              }
-              border
-            `}
+            className="w-full px-3 py-3.5 rounded-xl text-center text-[14px] font-bold outline-none transition-all duration-200 shadow-sm bg-white border border-slate-200/80 text-slate-900 hover:border-slate-300 focus:border-emerald-500/40 focus:ring-4 focus:ring-emerald-500/10"
           />
-          {isCorrect && (
-            <div className="absolute -right-1.5 -top-1.5 w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center shadow-sm">
-              <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"></path></svg>
-            </div>
-          )}
         </div>
       </div>
     </div>

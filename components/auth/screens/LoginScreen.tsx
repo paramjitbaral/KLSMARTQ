@@ -17,6 +17,7 @@ interface Props {
   error?: string;
   info?: string;
   setRecaptchaToken: (valid: string | null) => void;
+  captchaKey?: number;
 }
 
 const LoginScreen = ({
@@ -30,7 +31,8 @@ const LoginScreen = ({
   goForgot,
   error,
   info,
-  setRecaptchaToken
+  setRecaptchaToken,
+  captchaKey
 }: Props) => (
   <div className="w-full h-full flex flex-col justify-center animate-fadeIn">
     {/* Header */}
@@ -62,7 +64,7 @@ const LoginScreen = ({
         autoComplete="current-password"
       />
 
-      <MathCaptcha onValidate={(isValid) => setRecaptchaToken(isValid ? "valid" : null)} />
+      <MathCaptcha key={captchaKey} onValidate={(isValid) => setRecaptchaToken(isValid ? "valid" : null)} />
 
       {/* Options row */}
       <div className="flex justify-between items-center text-[13px] pt-1">

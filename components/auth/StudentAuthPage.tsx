@@ -54,6 +54,8 @@ const StudentAuthPage = () => {
     return () => clearTimeout(t);
   }, [resendCooldown]);
 
+  const [captchaKey, setCaptchaKey] = useState(0);
+
   /* ----------------------- LOGIN ------------------------- */
   const handleLogin = async (e: any) => {
     e.preventDefault();
@@ -61,7 +63,8 @@ const StudentAuthPage = () => {
     setInfo("");
 
     if (!recaptchaToken) {
-      setError("Please complete the reCAPTCHA verification.");
+      setError("Incorrect security verification answer.");
+      setCaptchaKey(prev => prev + 1);
       return;
     }
 
@@ -249,6 +252,7 @@ const StudentAuthPage = () => {
               error={error}
               info={info}
               setRecaptchaToken={setRecaptchaToken}
+              captchaKey={captchaKey}
             />
           )}
 
