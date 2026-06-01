@@ -25,10 +25,13 @@ const AuthButton: React.FC<Props> = ({
       }}
       disabled={disabled || isLoading}
       className="
-        relative w-full py-4 rounded-xl font-semibold
-        bg-slate-900 text-white hover:bg-slate-800
+        relative w-full py-3.5 rounded-xl font-semibold text-[15px]
+        bg-slate-900 text-white
+        hover:bg-slate-800
         disabled:opacity-50 disabled:cursor-not-allowed
-        transition-all duration-200 hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98]
+        transition-all duration-200
+        hover:shadow-lg hover:-translate-y-0.5
+        active:translate-y-0 active:scale-[0.99]
         overflow-hidden
       "
     >
@@ -39,14 +42,6 @@ const AuthButton: React.FC<Props> = ({
           children
         )}
       </div>
-
-      <div
-        className="
-          absolute inset-0 bg-emerald-400/20
-          scale-x-0 group-hover:scale-x-100
-          transition-transform origin-left duration-200
-        "
-      />
     </button>
   );
 };

@@ -10,11 +10,18 @@ import ResetPasswordScreen from "./screens/ResetPasswordScreen";
 
 
 const StudentAuthPage = () => {
-  usePullToRefresh();
   const { login, signup, verifySignupOtp, resendSignupOtp, requestPasswordReset, submitPasswordReset } =
     useAppContext();
 
-  const [showOnboarding, setShowOnboarding] = useState(true);
+  const [showOnboarding, setShowOnboarding] = useState(() => {
+    return localStorage.getItem("hasSeenOnboarding") !== "true";
+  });
+
+  const handleCompleteOnboarding = () => {
+    localStorage.setItem("hasSeenOnboarding", "true");
+    setShowOnboarding(false);
+  };
+
   const [authState, setAuthState] = useState<
     "login" | "signup" | "verify" | "forgot_password" | "reset_password"
   >("login");
@@ -23,6 +30,7 @@ const StudentAuthPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [otp, setOtp] = useState("");
+  const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
 
   // UI feedback
   const [error, setError] = useState("");
@@ -51,6 +59,12 @@ const StudentAuthPage = () => {
     e.preventDefault();
     setError("");
     setInfo("");
+
+    if (!recaptchaToken) {
+      setError("Please complete the reCAPTCHA verification.");
+      return;
+    }
+
     setIsLoading(true);
 
     const res = await login(email, password);
@@ -198,7 +212,7 @@ const StudentAuthPage = () => {
           ${showOnboarding ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
         `}
       >
-        <HolographicDeck onComplete={() => setShowOnboarding(false)} />
+        <HolographicDeck onComplete={handleCompleteOnboarding} />
       </div>
 
       {/* RIGHT — AUTH */}
@@ -234,6 +248,7 @@ const StudentAuthPage = () => {
               goForgot={() => switchState("forgot_password")}
               error={error}
               info={info}
+              setRecaptchaToken={setRecaptchaToken}
             />
           )}
 
@@ -291,10 +306,6 @@ const StudentAuthPage = () => {
             />
           )}
         </div>
-
-        <p className="absolute bottom-6 text-center text-[10px] text-slate-600 font-mono tracking-widest uppercase opacity-50">
-          SECURE SYSTEM // KL UNIVERSITY // V2.0.4
-        </p>
       </div>
     </div>
   );

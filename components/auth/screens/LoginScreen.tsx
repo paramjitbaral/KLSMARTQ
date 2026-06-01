@@ -2,7 +2,8 @@ import React from "react";
 import InputField from "../ui/InputField";
 import PasswordField from "../ui/PasswordField";
 import AuthButton from "../ui/AuthButton";
-import { LogoIcon } from "../Icons";
+
+import MathCaptcha from "../ui/MathCaptcha";
 
 interface Props {
   email: string;
@@ -15,6 +16,7 @@ interface Props {
   goForgot: () => void;
   error?: string;
   info?: string;
+  setRecaptchaToken: (valid: string | null) => void;
 }
 
 const LoginScreen = ({
@@ -28,69 +30,87 @@ const LoginScreen = ({
   goForgot,
   error,
   info,
+  setRecaptchaToken
 }: Props) => (
   <div className="w-full h-full flex flex-col justify-center animate-fadeIn">
-    <div className="mb-10">
-      <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center mb-6 border border-slate-200/60 shadow-[0_2px_10px_rgb(0,0,0,0.04)]">
-        <LogoIcon className="w-6 h-6 text-emerald-500" />
-      </div>
-
-      <h2 className="text-[32px] font-extrabold text-slate-900 tracking-tight">Welcome Back</h2>
-      <p className="text-slate-500 mt-2 text-[15px]">Enter your credentials to continue.</p>
+    {/* Header */}
+    <div className="mb-10 text-center">
+      <h2 className="text-3xl font-bold text-slate-900 tracking-tight">
+        Welcome back
+      </h2>
+      <p className="text-slate-500 mt-2 text-[15px]">
+        Sign in to your KL SmartQ account
+      </p>
     </div>
 
-    <form onSubmit={onSubmit} className="space-y-6">
+    {/* Form */}
+    <form onSubmit={onSubmit} className="space-y-3.5">
       <InputField
         id="loginEmail"
         type="email"
-        placeholder="student@university.edu"
+        placeholder="Email address"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
         autoComplete="username"
-        label="Email"
       />
 
       <PasswordField
         id="loginPassword"
-        placeholder="••••••••"
+        placeholder="Password"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
         autoComplete="current-password"
-        label="Password"
       />
 
-      <div className="flex justify-between text-xs text-slate-500">
-        <label className="flex items-center gap-2 cursor-pointer">
-          <input type="checkbox" className="w-3.5 h-3.5 rounded bg-white border-slate-300" />
-          Keep me logged in
+      <MathCaptcha onValidate={(isValid) => setRecaptchaToken(isValid ? "valid" : null)} />
+
+      {/* Options row */}
+      <div className="flex justify-between items-center text-[13px] pt-1">
+        <label className="flex items-center gap-2 cursor-pointer select-none group">
+          <input
+            type="checkbox"
+            className="w-4 h-4 rounded-md border-slate-300 text-emerald-500 focus:ring-emerald-500/20 transition"
+          />
+          <span className="text-slate-600 group-hover:text-slate-800 transition-colors">Remember me</span>
         </label>
 
-        <button type="button" onClick={goForgot} className="text-emerald-400 hover:text-emerald-300">
-          Forgot?
+        <button
+          type="button"
+          onClick={goForgot}
+          className="text-emerald-600 hover:text-emerald-700 font-medium transition-colors"
+        >
+          Forgot password?
         </button>
       </div>
 
+      {/* Error/Info messages */}
       {error && (
-        <div className="text-rose-500 text-sm font-medium mt-2">
+        <div className="flex items-center gap-2 text-rose-600 text-[13px] font-medium bg-rose-50 border border-rose-100 rounded-xl px-4 py-2.5">
+          <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"></path></svg>
           {error}
         </div>
       )}
       {info && (
-        <div className="text-emerald-500 text-sm font-medium mt-2">
+        <div className="flex items-center gap-2 text-emerald-600 text-[13px] font-medium bg-emerald-50 border border-emerald-100 rounded-xl px-4 py-2.5">
+          <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
           {info}
         </div>
       )}
 
-      <AuthButton type="submit" isLoading={isLoading}>
-        Login
-      </AuthButton>
+      {/* Submit */}
+      <div className="pt-3">
+        <AuthButton type="submit" isLoading={isLoading}>
+          Sign In
+        </AuthButton>
+      </div>
     </form>
 
-    <div className="mt-8 text-center pt-6 border-t border-slate-200">
-      <p className="text-slate-500 text-sm">
-        New student?
-        <button onClick={goSignup} className="text-slate-900 ml-1 font-semibold hover:text-emerald-500">
-          Register
+    {/* Footer */}
+    <div className="mt-8 text-center">
+      <p className="text-slate-500 text-[13px]">
+        Don't have an account?{" "}
+        <button onClick={goSignup} className="text-emerald-600 font-semibold hover:text-emerald-700 transition-colors">
+          Create one
         </button>
       </p>
     </div>

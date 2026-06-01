@@ -34,10 +34,10 @@ const InputField = React.forwardRef<HTMLInputElement, Props>(
           placeholder={placeholder}
           autoComplete={autoComplete}
           className="
-            w-full px-4 py-3 rounded-xl bg-white text-slate-900 shadow-[0_2px_10px_rgb(0,0,0,0.04)]
-            placeholder-slate-400 border border-slate-200 hover:border-slate-300
-            focus:border-emerald-500/50 focus:ring-4 focus:ring-emerald-500/10
-            transition-all duration-200 outline-none text-sm font-mono
+            w-full px-4 py-3.5 rounded-xl bg-slate-50/80 text-slate-900
+            placeholder-slate-400 border border-slate-200/80 hover:border-slate-300
+            focus:border-emerald-500/40 focus:ring-4 focus:ring-emerald-500/10 focus:bg-white
+            transition-all duration-200 outline-none text-[14px]
           "
         />
       </div>

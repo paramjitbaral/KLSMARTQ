@@ -25,9 +25,24 @@ const pool = new Pool({ connectionString });
 const adapter = new PrismaPg(pool);
 export const prisma = new PrismaClient({ adapter });
 
+import helmet from "helmet";
+import hpp from "hpp";
+// @ts-ignore
+import xss from "xss-clean";
+import rateLimit from "express-rate-limit";
+
 // Middleware
+app.use(helmet());
 app.use(cors());
 app.use(express.json());
+app.use(hpp());
+app.use(xss());
+
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // limit each IP to 100 requests per windowMs
+});
+app.use(limiter);
 
 // Socket.io Setup
 io.on("connection", (socket) => {
