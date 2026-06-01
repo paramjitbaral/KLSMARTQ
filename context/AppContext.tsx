@@ -59,8 +59,8 @@ const useGlobalPullToRefresh = (refreshFn: () => Promise<void>) => {
 };
 
 // API & SOCKET CLIENT
-const API_URL = "http://localhost:5000/api";
-const SOCKET_URL = "http://localhost:5000";
+const SOCKET_URL = (import.meta as any).env.VITE_API_URL || "http://localhost:5000";
+const API_URL = `${SOCKET_URL}/api`;
 
 const api = axios.create({ baseURL: API_URL });
 api.interceptors.request.use((config) => {
