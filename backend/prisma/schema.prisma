@@ -1,0 +1,63 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Profile {
+  id                String   @id @default(uuid())
+  full_name         String
+  email             String   @unique
+  university_id     String?  @unique
+  password_hash     String?
+  is_verified       Boolean  @default(false)
+  role              String   @default("STUDENT") // STUDENT, STAFF, ADMIN
+  assigned_office_ids String[]
+  tokens            Token[]
+}
+
+model Office {
+  id              String   @id @default(uuid())
+  name            String
+  prefix          String
+  operating_hours String
+  token_limit     Int
+  is_active       Boolean  @default(true)
+  tokens          Token[]
+}
+
+model Token {
+  id             String   @id @default(uuid())
+  token_number   String
+  student_id     String
+  office_id      String
+  purpose        String
+  priority       String   @default("NORMAL")
+  status         String   @default("WAITING") // WAITING, IN_PROGRESS, COMPLETED
+  is_checked_in  Boolean  @default(false)
+  created_at     DateTime @default(now())
+  called_at      DateTime?
+  completed_at   DateTime?
+
+  student Profile @relation(fields: [student_id], references: [id])
+  office  Office  @relation(fields: [office_id], references: [id])
+}
+
+model Notification {
+  id         Int      @id @default(autoincrement())
+  user_id    String
+  message    String
+  created_at DateTime @default(now())
+}
+
+model Otp {
+  id         String   @id @default(uuid())
+  email      String
+  code       String
+  purpose    String   @default("SIGNUP") // SIGNUP, LOGIN, RESET_PASSWORD
+  created_at DateTime @default(now())
+  expires_at DateTime
+  is_used    Boolean  @default(false)
+}
