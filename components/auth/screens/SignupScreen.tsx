@@ -40,7 +40,8 @@ const SignupScreen = ({ email, setEmail, onSubmit, isLoading, goLogin, error }: 
 
   return (
     <div className="w-full h-full flex flex-col justify-center animate-fadeIn">
-      <div className="mb-8">
+      <div className="mb-8 text-center flex flex-col items-center">
+        <img src="/logo.png" alt="SmartQ Logo" className="h-16 mb-4 object-contain" />
         <h2 className="text-3xl font-bold text-slate-900">Create Account</h2>
         <p className="text-slate-500 mt-2 text-sm">Register your university identity.</p>
       </div>

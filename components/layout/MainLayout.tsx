@@ -118,7 +118,7 @@ const Sidebar = () => {
   return (
     <aside className="w-64 bg-[#1F2837] text-white h-full p-6 flex flex-col border-r border-black/10">
       <div className="flex items-center justify-between mb-8">
-        <h1 className="text-2xl font-bold tracking-wide">SmartQ</h1>
+        <img src="/logo.png" alt="SmartQ Logo" className="h-10 object-contain" />
       </div>
 
       <nav className="flex-1 space-y-2">{renderLinks()}</nav>
@@ -205,8 +205,8 @@ const Header = () => {
       "
     >
       {/* Mobile Title */}
-      <div className="lg:hidden font-bold text-xl tracking-tight text-[#0A4DBF]">
-        SmartQ
+      <div className="lg:hidden flex items-center justify-center">
+        <img src="/logo.png" alt="SmartQ Logo" className="h-8 object-contain" />
       </div>
 
       {/* Desktop empty spacer for flex-between */}

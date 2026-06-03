@@ -36,7 +36,8 @@ const LoginScreen = ({
 }: Props) => (
   <div className="w-full h-full flex flex-col justify-center animate-fadeIn">
     {/* Header */}
-    <div className="mb-10 text-center">
+    <div className="mb-10 text-center flex flex-col items-center">
+      <img src="/logo.png" alt="SmartQ Logo" className="h-16 mb-4 object-contain" />
       <h2 className="text-3xl font-bold text-slate-900 tracking-tight">
         Welcome back
       </h2>
