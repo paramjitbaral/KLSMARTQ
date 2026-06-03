@@ -12,13 +12,13 @@ export const sendOTP = async (email: string, otp: string) => {
     await axios.post(
       "https://api.brevo.com/v3/smtp/email",
       {
-        sender: { name: "KL SmartQ", email: "baralswaraj4@gmail.com" },
+        sender: { name: "SmartQ", email: "baralswaraj4@gmail.com" },
         to: [{ email }],
-        subject: "Your KL SmartQ Verification Code",
+        subject: "Your SmartQ Verification Code",
         htmlContent: `
           <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; max-w-md: 600px; margin: 0 auto; background-color: #f8fafc; padding: 40px 20px;">
             <div style="background-color: #ffffff; border-radius: 12px; padding: 40px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03); border-top: 4px solid #10b981; text-align: center;">
-              <h1 style="color: #0f172a; font-size: 24px; font-weight: 700; margin-bottom: 8px;">KL SmartQ</h1>
+              <h1 style="color: #0f172a; font-size: 24px; font-weight: 700; margin-bottom: 8px;">SmartQ</h1>
               <p style="color: #64748b; font-size: 16px; margin-bottom: 32px;">Secure Identity Verification</p>
               
               <div style="background-color: #f1f5f9; border-radius: 8px; padding: 24px; margin-bottom: 32px;">

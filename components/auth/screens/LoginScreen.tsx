@@ -41,7 +41,7 @@ const LoginScreen = ({
         Welcome back
       </h2>
       <p className="text-slate-500 mt-2 text-[15px]">
-        Sign in to your KL SmartQ account
+        Sign in to your SmartQ account
       </p>
     </div>
 
