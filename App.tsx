@@ -88,33 +88,43 @@ const App: React.FC = () => {
      INITIAL LOADING & AUTH HANDLING — UNTOUCHED
   ------------------------------------------------------------------ */
 
+  const isSsoRef = React.useRef(new URLSearchParams(window.location.search).has('email'));
+
   if (loading) {
+    if (isSsoRef.current) {
+      return (
+        <div className="flex h-screen bg-slate-50 overflow-hidden w-full">
+          {/* Sidebar Skeleton */}
+          <div className="hidden lg:flex w-64 bg-white border-r border-slate-200 p-6 flex-col gap-6">
+            <div className="h-10 w-32 bg-slate-200 rounded-lg animate-pulse mb-8" />
+            <div className="h-12 w-full bg-slate-200 rounded-lg animate-pulse" />
+            <div className="h-12 w-full bg-slate-200 rounded-lg animate-pulse" />
+            <div className="h-12 w-full bg-slate-200 rounded-lg animate-pulse" />
+          </div>
+          {/* Main Content Skeleton */}
+          <div className="flex-1 flex flex-col p-6 lg:p-10 gap-8">
+            <div className="h-12 w-48 bg-slate-200 rounded-lg animate-pulse hidden lg:block" />
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+               <div className="h-24 md:h-32 bg-slate-200 rounded-2xl animate-pulse" />
+               <div className="h-24 md:h-32 bg-slate-200 rounded-2xl animate-pulse" />
+               <div className="h-24 md:h-32 bg-slate-200 rounded-2xl animate-pulse" />
+            </div>
+            <div className="flex-1 bg-white border border-slate-200 rounded-2xl p-6">
+               <div className="h-8 w-48 bg-slate-200 rounded-lg animate-pulse mb-6" />
+               <div className="space-y-4">
+                 <div className="h-20 w-full bg-slate-100 rounded-xl animate-pulse" />
+                 <div className="h-20 w-full bg-slate-100 rounded-xl animate-pulse" />
+                 <div className="h-20 w-full bg-slate-100 rounded-xl animate-pulse" />
+               </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
     return (
-      <div className="flex h-screen bg-slate-50 overflow-hidden w-full">
-        {/* Sidebar Skeleton */}
-        <div className="hidden lg:flex w-64 bg-white border-r border-slate-200 p-6 flex-col gap-6">
-          <div className="h-10 w-32 bg-slate-200 rounded-lg animate-pulse mb-8" />
-          <div className="h-12 w-full bg-slate-200 rounded-lg animate-pulse" />
-          <div className="h-12 w-full bg-slate-200 rounded-lg animate-pulse" />
-          <div className="h-12 w-full bg-slate-200 rounded-lg animate-pulse" />
-        </div>
-        {/* Main Content Skeleton */}
-        <div className="flex-1 flex flex-col p-6 lg:p-10 gap-8">
-          <div className="h-12 w-48 bg-slate-200 rounded-lg animate-pulse hidden lg:block" />
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-             <div className="h-24 md:h-32 bg-slate-200 rounded-2xl animate-pulse" />
-             <div className="h-24 md:h-32 bg-slate-200 rounded-2xl animate-pulse" />
-             <div className="h-24 md:h-32 bg-slate-200 rounded-2xl animate-pulse" />
-          </div>
-          <div className="flex-1 bg-white border border-slate-200 rounded-2xl p-6">
-             <div className="h-8 w-48 bg-slate-200 rounded-lg animate-pulse mb-6" />
-             <div className="space-y-4">
-               <div className="h-20 w-full bg-slate-100 rounded-xl animate-pulse" />
-               <div className="h-20 w-full bg-slate-100 rounded-xl animate-pulse" />
-               <div className="h-20 w-full bg-slate-100 rounded-xl animate-pulse" />
-             </div>
-          </div>
-        </div>
+      <div className="flex h-screen bg-slate-50 items-center justify-center w-full">
+        <div className="h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
   }

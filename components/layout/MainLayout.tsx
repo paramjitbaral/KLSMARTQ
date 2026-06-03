@@ -35,8 +35,8 @@ const NavItem = ({
       flex items-center gap-3 px-4 py-3 rounded-lg transition font-medium
       ${
         isActive
-          ? `bg-[${PRIMARY}] text-white shadow-sm`
-          : "text-[#C7CEDB] hover:bg-white/10 hover:text-white"
+          ? "bg-[#0A4DBF] text-white shadow-sm"
+          : "text-[#C7CEDB] hover:bg-slate-700 hover:text-white"
       }
     `
     }
@@ -117,8 +117,9 @@ const Sidebar = () => {
 
   return (
     <aside className="w-64 bg-[#1F2837] text-white h-full p-6 flex flex-col border-r border-black/10">
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex items-center gap-3 mb-8">
         <img src="/logo.png" alt="SmartQ Logo" className="h-10 object-contain" />
+        <span className="text-2xl font-bold text-white tracking-tight">SmartQ</span>
       </div>
 
       <nav className="flex-1 space-y-2">{renderLinks()}</nav>
@@ -205,8 +206,9 @@ const Header = () => {
       "
     >
       {/* Mobile Title */}
-      <div className="lg:hidden flex items-center justify-center">
+      <div className="lg:hidden flex items-center justify-center gap-2">
         <img src="/logo.png" alt="SmartQ Logo" className="h-8 object-contain" />
+        <span className="text-xl font-bold text-slate-800 tracking-tight">SmartQ</span>
       </div>
 
       {/* Desktop empty spacer for flex-between */}
