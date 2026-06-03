@@ -15,6 +15,46 @@ router.get("/offices", async (req, res) => {
   res.json(offices);
 });
 
+router.post("/offices/setup", async (req: any, res) => {
+  const user = req.user;
+  if (user.role !== "STAFF") return res.status(403).json({ error: "Only STAFF can setup an office" });
+
+  const { name, prefix } = req.body;
+  if (!name || !prefix) return res.status(400).json({ error: "Office name and prefix (cabin number) are required" });
+
+  const newOffice = await prisma.office.create({
+    data: {
+      name,
+      prefix,
+      operating_hours: "9:00 AM - 5:00 PM",
+      token_limit: 50,
+      is_active: true,
+    }
+  });
+
+  // Assign the new office to the staff member
+  const profile = await prisma.profile.findUnique({ where: { id: user.id } });
+  const updatedOffices = [...(profile?.assigned_office_ids || []), newOffice.id];
+  
+  await prisma.profile.update({
+    where: { id: user.id },
+    data: { assigned_office_ids: updatedOffices }
+  });
+
+  const formattedOffice = {
+    id: newOffice.id,
+    name: newOffice.name,
+    operatingHours: newOffice.operating_hours,
+    tokenLimit: newOffice.token_limit,
+    isActive: newOffice.is_active,
+    prefix: newOffice.prefix,
+  };
+
+  broadcast("office_created", formattedOffice);
+  
+  res.json({ success: true, office: formattedOffice });
+});
+
 // ------------------------------------------------------------------
 // TOKENS
 // ------------------------------------------------------------------

@@ -90,6 +90,7 @@ interface AppContextType {
   error: string | null;
 
   login: (email: string, password: string) => Promise<any>;
+  ssoLogin: (email: string, name: string, role: string) => Promise<any>;
   signup: (name: string, email: string, password: string) => Promise<any>;
   logout: () => Promise<void>;
   verifySignupOtp: (email: string, otp: string) => Promise<any>;
@@ -105,6 +106,7 @@ interface AppContextType {
   completeToken: (tokenId: string) => Promise<void>;
 
   addOffice: (office: any) => Promise<void>;
+  setupOffice: (name: string, prefix: string) => Promise<any>;
   updateOffice: (office: Office) => Promise<void>;
   deleteOffice: (officeId: string) => Promise<void>;
 
@@ -166,6 +168,25 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   ).length === 0;
 
   const loadData = useCallback(async () => {
+    const params = new URLSearchParams(window.location.search);
+    const ssoEmail = params.get('email');
+    if (ssoEmail) {
+      try {
+        const { data } = await api.post("/auth/sso", { 
+          email: ssoEmail, 
+          name: params.get('name'), 
+          role: params.get('role') 
+        });
+        localStorage.setItem("kl_smartq_jwt", data.token);
+        window.history.replaceState({}, document.title, window.location.pathname);
+        setSession(data.token);
+        return; // Early return, changing session will trigger loadData again
+      } catch (err) {
+        console.error("SSO Error:", err);
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
+    }
+
     if (!session) {
       setCurrentUser(null);
       setUsers([]);
@@ -299,6 +320,17 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const ssoLogin = async (email: string, name: string, role: string) => {
+    try {
+      const { data } = await api.post("/auth/sso", { email, name, role });
+      localStorage.setItem("kl_smartq_jwt", data.token);
+      setSession(data.token);
+      return { success: true, message: "SSO login successful" };
+    } catch (err: any) {
+      return { success: false, message: err.response?.data?.error || err.message };
+    }
+  };
+
   const checkEmailAvailability = async (email: string) => {
     return { available: true, message: "Checked" }; // Mocked for now
   };
@@ -424,6 +456,26 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const addOffice = async (office: any) => {
     await api.post("/admin/offices", office);
   };
+  const setupOffice = async (name: string, prefix: string) => {
+    try {
+      const { data } = await api.post("/offices/setup", { name, prefix });
+      
+      // Update local context
+      setOffices((prev) => [...prev, data.office]);
+      if (currentUserRef.current) {
+        const updatedUser = { 
+          ...currentUserRef.current, 
+          assignedOfficeIds: [...(currentUserRef.current.assignedOfficeIds || []), data.office.id] 
+        };
+        setCurrentUser(updatedUser);
+        currentUserRef.current = updatedUser;
+      }
+      
+      return { success: true };
+    } catch (err: any) {
+      return { success: false, message: err.response?.data?.error || err.message };
+    }
+  };
   const updateOffice = async (office: Office) => {
     await api.put(`/admin/offices/${office.id}`, office);
   };
@@ -455,6 +507,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       loading,
       error,
       login,
+      ssoLogin,
       signup,
       logout,
       verifySignupOtp,
@@ -468,6 +521,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       callNextToken,
       completeToken,
       addOffice,
+      setupOffice,
       updateOffice,
       deleteOffice,
       addUser,

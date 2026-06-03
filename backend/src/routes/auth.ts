@@ -162,6 +162,37 @@ export const authenticateToken = (req: any, res: any, next: any) => {
   });
 };
 
+router.post("/sso", async (req, res) => {
+  const { email, name, role } = req.body;
+  if (!email) return res.status(400).json({ error: "Email is required for SSO" });
+  
+  const standardizedRole = (role || "").toUpperCase() === "ADMIN" ? "ADMIN" : ((role || "").toUpperCase() === "TEACHER" || (role || "").toUpperCase() === "FACULTY" ? "STAFF" : "STUDENT");
+
+  let user = await prisma.profile.findUnique({ where: { email } });
+  
+  if (!user) {
+    const password_hash = await bcrypt.hash(generateOTP() + Date.now().toString(), 10);
+    user = await prisma.profile.create({
+      data: {
+        full_name: name || "SSO User",
+        email,
+        password_hash,
+        role: standardizedRole as any,
+        is_verified: true
+      }
+    });
+  } else if (!(user as any).is_verified) {
+    user = await prisma.profile.update({
+      where: { id: user.id },
+      data: { is_verified: true } as any
+    });
+  }
+
+  const token = jwt.sign({ id: user.id, email: user.email, role: user.role }, JWT_SECRET, { expiresIn: "7d" });
+
+  res.json({ success: true, token, user });
+});
+
 router.get("/me", authenticateToken, async (req: any, res) => {
   const user = await prisma.profile.findUnique({ where: { id: req.user.id } });
   res.json({ user });

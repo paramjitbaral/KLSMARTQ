@@ -87,7 +87,39 @@ const CurrentServiceCard: React.FC<{ token: Token }> =
 ============================================================ */
 
 const StaffDashboard: React.FC = () => {
-  const { currentUser, offices, tokens, callNextToken, completeToken } = useAppContext();
+  const { currentUser, offices, tokens, callNextToken, completeToken, setupOffice } = useAppContext();
+
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [onboardingName, setOnboardingName] = useState("");
+  const [onboardingCabin, setOnboardingCabin] = useState("");
+  const [isSettingUp, setIsSettingUp] = useState(false);
+  const [setupError, setSetupError] = useState("");
+
+  useEffect(() => {
+    // If user is a STAFF and has no offices assigned, show onboarding
+    if (currentUser?.role === Role.STAFF && (!currentUser.assignedOfficeIds || currentUser.assignedOfficeIds.length === 0)) {
+      setShowOnboarding(true);
+    } else {
+      setShowOnboarding(false);
+    }
+  }, [currentUser]);
+
+  const handleSetupOffice = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!onboardingName || !onboardingCabin) {
+      setSetupError("Both fields are required");
+      return;
+    }
+    setIsSettingUp(true);
+    setSetupError("");
+    const res = await setupOffice(onboardingName, onboardingCabin);
+    setIsSettingUp(false);
+    if (!res.success) {
+      setSetupError(res.message);
+    } else {
+      setShowOnboarding(false);
+    }
+  };
 
   const staffOffices = useMemo(
     () =>
@@ -175,7 +207,58 @@ const StaffDashboard: React.FC = () => {
   ============================================================ */
 
   return (
-    <div className="h-screen flex flex-col overflow-hidden">
+    <div className="h-screen flex flex-col overflow-hidden relative">
+
+      {/* --------------------------------------------------------
+         🚀 STAFF ONBOARDING MODAL
+      -------------------------------------------------------- */}
+      {showOnboarding && (
+        <div className="absolute inset-0 z-50 bg-black/50 backdrop-blur-sm flex flex-col items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full animate-fade-in">
+            <div className="text-center mb-6">
+              <div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl">
+                🏫
+              </div>
+              <h2 className="text-2xl font-black text-gray-900">Setup Your SmartQ Office</h2>
+              <p className="text-sm text-gray-500 mt-2">Before you can start managing queues, please set up your consulting cabin details.</p>
+            </div>
+            
+            <form onSubmit={handleSetupOffice} className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1">Office / Display Name</label>
+                <input 
+                  type="text" 
+                  value={onboardingName}
+                  onChange={(e) => setOnboardingName(e.target.value)}
+                  placeholder="e.g. Prof. Jenkins Consulting"
+                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all font-medium text-gray-800"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1">Cabin Number (Prefix)</label>
+                <input 
+                  type="text" 
+                  value={onboardingCabin}
+                  onChange={(e) => setOnboardingCabin(e.target.value)}
+                  placeholder="e.g. C304"
+                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all font-medium text-gray-800"
+                />
+              </div>
+
+              {setupError && <p className="text-sm text-red-600 font-semibold">{setupError}</p>}
+
+              <button 
+                type="submit"
+                disabled={isSettingUp}
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl shadow-md transition-all disabled:opacity-50 mt-4"
+              >
+                {isSettingUp ? "Setting up..." : "Complete Setup"}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* --------------------------------------------------------
          📱 MOBILE VIEW
