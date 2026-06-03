@@ -59,7 +59,20 @@ const useGlobalPullToRefresh = (refreshFn: () => Promise<void>) => {
 };
 
 // API & SOCKET CLIENT
-const SOCKET_URL = (import.meta as any).env.VITE_API_URL || "http://localhost:5000";
+const getBackendUrl = () => {
+  const viteUrl = (import.meta as any).env.VITE_API_URL;
+  if (viteUrl) return viteUrl;
+
+  const hostname = typeof window !== 'undefined' ? window.location.hostname : 'localhost';
+  const isLocalHost = /^(localhost|127\.0\.0\.1|192\.168\.\d+\.\d+|10\.\d+\.\d+\.\d+|172\.(1[6-9]|2\d|3[0-1])\.\d+\.\d+)$/.test(hostname);
+
+  if (isLocalHost) {
+    return `http://${hostname}:5000`;
+  }
+  return "https://klsmartq.onrender.com";
+};
+
+const SOCKET_URL = getBackendUrl();
 const API_URL = `${SOCKET_URL}/api`;
 
 const api = axios.create({ baseURL: API_URL });
