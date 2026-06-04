@@ -22,7 +22,7 @@
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "ignoreDeprecations": "5.0"
+    "ignoreDeprecations": "6.0"
   },
   "ts-node": {
     "ignoreDiagnostics": [
