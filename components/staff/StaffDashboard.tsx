@@ -98,11 +98,19 @@ const StaffDashboard: React.FC = () => {
   useEffect(() => {
     // If user is a STAFF and has no offices assigned, show onboarding
     if (currentUser?.role === Role.STAFF && (!currentUser.assignedOfficeIds || currentUser.assignedOfficeIds.length === 0)) {
-      setShowOnboarding(true);
+      const params = new URLSearchParams(window.location.search);
+      const urlOffice = params.get('officeName');
+      const urlCabin = params.get('cabinNumber');
+      
+      if (urlOffice && urlCabin) {
+        setupOffice(urlOffice, urlCabin);
+      } else {
+        setShowOnboarding(true);
+      }
     } else {
       setShowOnboarding(false);
     }
-  }, [currentUser]);
+  }, [currentUser, setupOffice]);
 
   const handleSetupOffice = async (e: React.FormEvent) => {
     e.preventDefault();
