@@ -213,47 +213,82 @@ const StaffDashboard: React.FC = () => {
          🚀 STAFF ONBOARDING MODAL
       -------------------------------------------------------- */}
       {showOnboarding && (
-        <div className="absolute inset-0 z-50 bg-black/50 backdrop-blur-sm flex flex-col items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full animate-fade-in">
-            <div className="text-center mb-6">
-              <div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl">
-                🏫
+        <div className="absolute inset-0 z-50 bg-slate-900/60 backdrop-blur-md flex flex-col items-center justify-center p-4 sm:p-6 transition-all duration-300">
+          <div className="bg-white/90 backdrop-blur-xl border border-white/20 rounded-[2rem] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.3)] p-8 sm:p-10 max-w-lg w-full animate-fade-in relative overflow-hidden">
+            
+            {/* Decorative background gradients */}
+            <div className="absolute -top-32 -right-32 w-64 h-64 bg-blue-400/20 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute -bottom-32 -left-32 w-64 h-64 bg-emerald-400/20 rounded-full blur-3xl pointer-events-none" />
+
+            <div className="relative z-10 text-center mb-8">
+              <div className="w-20 h-20 bg-gradient-to-tr from-blue-600 to-indigo-500 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-xl shadow-blue-500/30 transform rotate-3 hover:rotate-0 transition-transform duration-300">
+                <span className="text-4xl text-white drop-shadow-md">🏫</span>
               </div>
-              <h2 className="text-2xl font-black text-gray-900">Setup Your SmartQ Office</h2>
-              <p className="text-sm text-gray-500 mt-2">Before you can start managing queues, please set up your consulting cabin details.</p>
+              <h2 className="text-3xl font-black text-slate-800 tracking-tight">Configure Your Office</h2>
+              <p className="text-sm text-slate-500 mt-3 font-medium leading-relaxed max-w-xs mx-auto">
+                Welcome! Let's set up your consulting cabin so students can join your queue.
+              </p>
             </div>
             
-            <form onSubmit={handleSetupOffice} className="space-y-4">
-              <div>
-                <label className="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1">Office / Display Name</label>
-                <input 
-                  type="text" 
-                  value={onboardingName}
-                  onChange={(e) => setOnboardingName(e.target.value)}
-                  placeholder="e.g. Prof. Jenkins Consulting"
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all font-medium text-gray-800"
-                />
+            <form onSubmit={handleSetupOffice} className="relative z-10 space-y-5">
+              <div className="space-y-1.5">
+                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider ml-1">Office / Display Name</label>
+                <div className="relative group">
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <span className="text-slate-400 group-focus-within:text-blue-500 transition-colors">🏢</span>
+                  </div>
+                  <input 
+                    type="text" 
+                    value={onboardingName}
+                    onChange={(e) => setOnboardingName(e.target.value)}
+                    placeholder="e.g. Prof. Jenkins Consulting"
+                    className="w-full pl-11 pr-4 py-3.5 bg-slate-50/50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all font-semibold text-slate-700 placeholder:text-slate-400 placeholder:font-normal shadow-sm"
+                  />
+                </div>
               </div>
               
-              <div>
-                <label className="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1">Cabin Number (Prefix)</label>
-                <input 
-                  type="text" 
-                  value={onboardingCabin}
-                  onChange={(e) => setOnboardingCabin(e.target.value)}
-                  placeholder="e.g. C304"
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all font-medium text-gray-800"
-                />
+              <div className="space-y-1.5">
+                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider ml-1">Cabin Number (Prefix)</label>
+                <div className="relative group">
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <span className="text-slate-400 group-focus-within:text-indigo-500 transition-colors">🚪</span>
+                  </div>
+                  <input 
+                    type="text" 
+                    value={onboardingCabin}
+                    onChange={(e) => setOnboardingCabin(e.target.value)}
+                    placeholder="e.g. C304"
+                    className="w-full pl-11 pr-4 py-3.5 bg-slate-50/50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all font-semibold text-slate-700 placeholder:text-slate-400 placeholder:font-normal shadow-sm uppercase"
+                  />
+                </div>
               </div>
 
-              {setupError && <p className="text-sm text-red-600 font-semibold">{setupError}</p>}
+              {setupError && (
+                <div className="p-3 bg-red-50 border border-red-100 rounded-xl flex items-center space-x-2 animate-fade-in">
+                  <span className="text-red-500 text-lg">⚠️</span>
+                  <p className="text-sm text-red-600 font-semibold">{setupError}</p>
+                </div>
+              )}
 
               <button 
                 type="submit"
-                disabled={isSettingUp}
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl shadow-md transition-all disabled:opacity-50 mt-4"
+                disabled={isSettingUp || !onboardingName.trim() || !onboardingCabin.trim()}
+                className="w-full relative overflow-hidden group bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold py-4 rounded-xl shadow-lg shadow-blue-500/25 transition-all disabled:opacity-50 disabled:cursor-not-allowed mt-8 transform active:scale-[0.98]"
               >
-                {isSettingUp ? "Setting up..." : "Complete Setup"}
+                <div className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity" />
+                <span className="relative flex items-center justify-center gap-2">
+                  {isSettingUp ? (
+                    <>
+                      <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Setting up...
+                    </>
+                  ) : (
+                    "Complete Setup ✨"
+                  )}
+                </span>
               </button>
             </form>
           </div>
