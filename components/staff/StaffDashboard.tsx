@@ -98,12 +98,14 @@ const StaffDashboard: React.FC = () => {
   useEffect(() => {
     // If user is a STAFF and has no offices assigned, show onboarding
     if (currentUser?.role === Role.STAFF && (!currentUser.assignedOfficeIds || currentUser.assignedOfficeIds.length === 0)) {
-      const params = new URLSearchParams(window.location.search);
-      const urlOffice = params.get('officeName');
-      const urlCabin = params.get('cabinNumber');
+      const urlOffice = localStorage.getItem('kl_smartq_sso_office');
+      const urlCabin = localStorage.getItem('kl_smartq_sso_cabin');
       
       if (urlOffice && urlCabin) {
-        setupOffice(urlOffice, urlCabin);
+        setupOffice(urlOffice, urlCabin).then(() => {
+          localStorage.removeItem('kl_smartq_sso_office');
+          localStorage.removeItem('kl_smartq_sso_cabin');
+        });
       } else {
         setShowOnboarding(true);
       }

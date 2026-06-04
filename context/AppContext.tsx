@@ -191,6 +191,15 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
           role: params.get('role') 
         });
         localStorage.setItem("kl_smartq_jwt", data.token);
+
+        // Preserve office parameters for auto-setup before clearing URL
+        const officeName = params.get('officeName');
+        const cabinNumber = params.get('cabinNumber');
+        if (officeName && cabinNumber) {
+          localStorage.setItem("kl_smartq_sso_office", officeName);
+          localStorage.setItem("kl_smartq_sso_cabin", cabinNumber);
+        }
+
         window.history.replaceState({}, document.title, window.location.pathname);
         setSession(data.token);
         return; // Early return, changing session will trigger loadData again
