@@ -10,6 +10,8 @@ interface Props {
   setEmail: (x: string) => void;
   password: string;
   setPassword: (x: string) => void;
+  rememberMe: boolean;
+  setRememberMe: (x: boolean) => void;
   onSubmit: (e: any) => void;
   isLoading: boolean;
   goSignup: () => void;
@@ -25,6 +27,8 @@ const LoginScreen = ({
   setEmail,
   password,
   setPassword,
+  rememberMe,
+  setRememberMe,
   onSubmit,
   isLoading,
   goSignup,
@@ -50,6 +54,7 @@ const LoginScreen = ({
     <form onSubmit={onSubmit} className="space-y-3.5">
       <InputField
         id="loginEmail"
+        name="email"
         type="email"
         placeholder="Email address"
         value={email}
@@ -59,6 +64,7 @@ const LoginScreen = ({
 
       <PasswordField
         id="loginPassword"
+        name="password"
         placeholder="Password"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
@@ -72,6 +78,8 @@ const LoginScreen = ({
         <label className="flex items-center gap-2 cursor-pointer select-none group">
           <input
             type="checkbox"
+            checked={rememberMe}
+            onChange={(e) => setRememberMe(e.target.checked)}
             className="w-4 h-4 rounded-md border-slate-300 text-emerald-500 focus:ring-emerald-500/20 transition"
           />
           <span className="text-slate-600 group-hover:text-slate-800 transition-colors">Remember me</span>

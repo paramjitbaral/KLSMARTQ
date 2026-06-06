@@ -2,6 +2,7 @@ import React from "react";
 
 interface Props {
   id: string;
+  name?: string;
   type: string;
   placeholder: string;
   value: string;
@@ -12,7 +13,7 @@ interface Props {
 }
 
 const InputField = React.forwardRef<HTMLInputElement, Props>(
-  ({ id, type, placeholder, value, onChange, disabled, autoComplete, label }, ref) => {
+  ({ id, name, type, placeholder, value, onChange, disabled, autoComplete, label }, ref) => {
     return (
       <div className="w-full">
         {label && (
@@ -27,6 +28,7 @@ const InputField = React.forwardRef<HTMLInputElement, Props>(
         <input
           ref={ref}
           id={id}
+          name={name || id}
           type={type}
           value={value}
           onChange={onChange}

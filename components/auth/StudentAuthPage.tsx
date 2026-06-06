@@ -27,7 +27,8 @@ const StudentAuthPage = () => {
   >("login");
 
   // Shared states
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(() => localStorage.getItem("kl_smartq_email") || "");
+  const [rememberMe, setRememberMe] = useState(() => !!localStorage.getItem("kl_smartq_email"));
   const [password, setPassword] = useState("");
   const [otp, setOtp] = useState("");
   const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
@@ -83,6 +84,12 @@ const StudentAuthPage = () => {
         setError(res.message);
       }
       setIsLoading(false);
+    } else {
+      if (rememberMe) {
+        localStorage.setItem("kl_smartq_email", email);
+      } else {
+        localStorage.removeItem("kl_smartq_email");
+      }
     }
   };
 
@@ -244,6 +251,8 @@ const StudentAuthPage = () => {
               setEmail={setEmail}
               password={password}
               setPassword={setPassword}
+              rememberMe={rememberMe}
+              setRememberMe={setRememberMe}
               onSubmit={handleLogin}
               isLoading={isLoading}
               goSignup={() => switchState("signup")}

@@ -4,6 +4,7 @@ import { EyeIcon, EyeOffIcon } from "../Icons";
 
 interface Props {
   id: string;
+  name?: string;
   placeholder: string;
   value: string;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
@@ -13,6 +14,7 @@ interface Props {
 
 const PasswordField: React.FC<Props> = ({
   id,
+  name,
   placeholder,
   value,
   onChange,
@@ -34,6 +36,7 @@ const PasswordField: React.FC<Props> = ({
       <div className="relative">
         <InputField
           id={id}
+          name={name}
           type={show ? "text" : "password"}
           placeholder={placeholder}
           value={value}
