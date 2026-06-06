@@ -114,12 +114,23 @@ const StudentDashboard: React.FC = () => {
           {activeTokens.map((t) => {
             const office = offices.find((o) => o.id === t.officeId);
 
-            const position = tokens.filter(
+            const officeTokens = tokens.filter(x => x.officeId === t.officeId);
+            const position = officeTokens.filter(
               (x) =>
-                x.officeId === t.officeId &&
                 x.status === TokenStatus.WAITING &&
                 x.createdAt <= t.createdAt
             ).length;
+
+            const completedTokens = officeTokens.filter(x => x.status === TokenStatus.COMPLETED && x.completedAt && x.calledAt);
+            let avgMins = 5;
+            if (completedTokens.length > 0) {
+               const totalMs = completedTokens.reduce((acc, curr) => acc + (curr.completedAt!.getTime() - curr.calledAt!.getTime()), 0);
+               avgMins = Math.round((totalMs / completedTokens.length) / 60000);
+               if (avgMins < 1) avgMins = 1;
+            }
+
+            const waitMins = position * avgMins;
+            const estimatedWait = waitMins > 0 ? `~${waitMins} min` : 'Next';
 
             return (
               <TokenCard
@@ -128,6 +139,7 @@ const StudentDashboard: React.FC = () => {
                 officeName={office?.name || "Office"}
                 studentName={currentUser?.name || "Student"}
                 position={position}
+                estimatedWait={estimatedWait}
                 onCheckIn={() => setTokenToCheckIn(t)}
               />
             );

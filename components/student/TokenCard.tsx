@@ -9,6 +9,7 @@ interface TokenCardProps {
   officeName: string;
   studentName: string;
   position: number;
+  estimatedWait: string;
   onCheckIn: (t: Token) => void;
 }
 
@@ -17,6 +18,7 @@ const TokenCard: React.FC<TokenCardProps> = ({
   officeName,
   studentName,
   position,
+  estimatedWait,
   onCheckIn,
 }) => {
   const isWaiting = token.status === TokenStatus.WAITING;
@@ -127,7 +129,7 @@ const TokenCard: React.FC<TokenCardProps> = ({
                 Wait
               </span>
               <span className="text-[10px] sm:text-xs font-semibold text-slate-800">
-                —
+                {estimatedWait}
               </span>
             </div>
           </div>

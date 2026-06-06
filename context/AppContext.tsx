@@ -418,7 +418,11 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const bookToken = async (officeId: string, purpose: string, priority: Priority) => {
-    await api.post("/tokens", { office_id: officeId, purpose, priority });
+    const { data } = await api.post("/tokens", { office_id: officeId, purpose, priority });
+    setTokens((prev) => {
+      if (prev.some((t) => t.id === data.id)) return prev;
+      return [...prev, formatToken(data)];
+    });
   };
 
   const callNextToken = async (officeId: string) => {

@@ -82,9 +82,8 @@ const StudentAuthPage = () => {
       } else {
         setError(res.message);
       }
+      setIsLoading(false);
     }
-
-    setIsLoading(false);
   };
 
   /* ----------------------- SIGNUP ------------------------- */
