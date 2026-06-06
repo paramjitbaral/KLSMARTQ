@@ -221,11 +221,9 @@ const Header = () => {
             {currentUser?.name}
           </p>
 
-          {officeName && (
-            <p className="text-[10px] lg:text-xs text-gray-400 uppercase tracking-wide">
-              {officeName}
-            </p>
-          )}
+          <p className="text-[10px] lg:text-xs text-gray-400 uppercase tracking-wide mt-0.5">
+            {currentUser?.role}{officeName ? ` • ${officeName}` : ""}
+          </p>
         </div>
 
         <div
