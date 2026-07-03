@@ -68,6 +68,11 @@ export const broadcast = (event: string, payload: any) => {
   io.emit(event, payload);
 };
 
+// Health check (before auth-protected routes)
+app.get("/api/health", (req, res) => {
+  res.json({ status: "ok" });
+});
+
 // Routes
 import authRoutes from "./routes/auth";
 import apiRoutes from "./routes/api";
@@ -77,9 +82,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api", apiRoutes);
 app.use("/api/admin", adminRouter);
 
-app.get("/api/health", (req, res) => {
-  res.json({ status: "ok" });
-});
+
 
 // Error handling middleware
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
